@@ -31,13 +31,14 @@ namespace ESCPOS_NET.ConsoleTest
             Console.WriteLine("1 ) Test Serial Port");
             Console.WriteLine("2 ) Test Network Printer");
             Console.WriteLine("3 ) Test Samba-Shared Printer");
+            Console.WriteLine("4 ) Run a local TCP echo server (for testing the network printer)");
             Console.Write("Choice: ");
             var comPort = "";
             string ip;
             string networkPort;
             string smbPath;
             response = Console.ReadLine();
-            var valid = new List<string> { "1", "2", "3" };
+            var valid = new List<string> { "1", "2", "3", "4" };
             if (!valid.Contains(response))
             {
                 response = "1";
@@ -103,6 +104,11 @@ namespace ESCPOS_NET.ConsoleTest
                 smbPath = Console.ReadLine();
 
                 printer = new SambaPrinter(tempFileBasePath: @"C:\Temp", filePath: smbPath);
+            }
+            else if (choice == 4)
+            {
+                TcpEchoServer.Run(9100);
+                return;
             }
 
             var monitor = false;
