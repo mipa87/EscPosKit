@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="README.md" />
+    <File Path="command_list.md" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/ConsoleTest/ConsoleTest.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/EscPosKit/EscPosKit.csproj" />
+    <Project Path="src/EscPosKit.Printers/EscPosKit.Printers.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/EscPosKit.Tests/EscPosKit.Tests.csproj" />
+  </Folder>
+</Solution>

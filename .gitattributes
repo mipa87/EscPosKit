@@ -1,1 +1,9 @@
 * text=auto
+
+# Verify snapshot files
+*.verified.txt text eol=lf working-tree-encoding=UTF-8
+*.verified.json text eol=lf working-tree-encoding=UTF-8
+*.verified.bin binary
+
+# Golden image captures
+*.bin binary

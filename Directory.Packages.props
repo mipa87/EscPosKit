@@ -1,0 +1,27 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup Label="src">
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.13" />
+    <!-- To be replaced by a dependency-free rasterizer; see the audit suppressions in Directory.Build.props. -->
+    <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.13" />
+    <PackageVersion Include="SuperSimpleTcp" Version="3.2.2" />
+    <PackageVersion Include="System.IO.Ports" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup Label="samples">
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup Label="test">
+    <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.5" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
+    <PackageVersion Include="Verify.XunitV3" Version="33.3.3" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.2" />
+  </ItemGroup>
+
+</Project>

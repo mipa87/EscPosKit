@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>EscPosKit</PackageId>
+    <RootNamespace>ESCPOS_NET</RootNamespace>
+    <Description>ESC/POS command generation for thermal receipt printers: text styles, barcodes, QR codes, images, cash drawer and status commands.</Description>
+    <PackageTags>escpos esc/pos epson thermal receipt printer pos</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="EscPosKit.Tests" />
+  </ItemGroup>
+
+</Project>

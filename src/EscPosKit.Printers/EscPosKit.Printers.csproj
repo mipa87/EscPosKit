@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>EscPosKit.Printers</PackageId>
+    <RootNamespace>ESCPOS_NET</RootNamespace>
+    <Description>Printer transports for EscPosKit: network (TCP), serial, file, Samba share and in-memory printers with status monitoring.</Description>
+    <PackageTags>escpos esc/pos epson thermal receipt printer pos network serial</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EscPosKit\EscPosKit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="SuperSimpleTcp" />
+    <PackageReference Include="System.IO.Ports" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="EscPosKit.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ESCPOS_NET.ConsoleTest</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EscPosKit\EscPosKit.csproj" />
+    <ProjectReference Include="..\..\src\EscPosKit.Printers\EscPosKit.Printers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="images\**;test-files\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
