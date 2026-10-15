@@ -1,23 +1,21 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
-namespace ESCPOS_NET.Extensions
+namespace ESCPOS_NET.Extensions;
+
+public static class TaskExtensions
 {
-    public static class TaskExtensions
+    public static void LogExceptions(this Task task)
     {
-        public static void LogExceptions(this Task task)
-        {
-            task.ContinueWith(
-                t =>
+        task.ContinueWith(
+            t =>
+            {
+                var aggException = t.Exception.Flatten();
+                foreach (var exception in aggException.InnerExceptions)
                 {
-                    var aggException = t.Exception.Flatten();
-                    foreach (var exception in aggException.InnerExceptions)
-                    {
-                        Logging.Logger?.LogError(exception, "Uncaught Thread Exception.");
-                    }
-                },
-                TaskContinuationOptions.OnlyOnFaulted
-            );
-        }
+                    Logging.Logger?.LogError(exception, "Uncaught Thread Exception.");
+                }
+            },
+            TaskContinuationOptions.OnlyOnFaulted
+        );
     }
 }

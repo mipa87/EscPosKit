@@ -1,8 +1,7 @@
-﻿namespace ESCPOS_NET
+﻿namespace ESCPOS_NET;
+
+public class PrinterOptions
 {
-    public class PrinterOptions
-    {
-        private int IdleTimeoutSeconds { get; set; } = 60;
-        private int StatusPollingIntervalMilliseconds { get; set; } = 500;
-    }
+    private int IdleTimeoutSeconds { get; set; } = 60;
+    private int StatusPollingIntervalMilliseconds { get; set; } = 500;
 }

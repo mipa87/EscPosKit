@@ -1,33 +1,30 @@
-﻿using System.IO;
+﻿namespace ESCPOS_NET;
 
-namespace ESCPOS_NET
+public class MemoryPrinter : BasePrinter
 {
-    public class MemoryPrinter : BasePrinter
+    private readonly MemoryStream _ms;
+
+    // TODO: default values to their default values in ctor.
+    public MemoryPrinter()
+        : base()
     {
-        private readonly MemoryStream _ms;
+        _ms = new MemoryStream();
+        Writer = new BinaryWriter(_ms);
+    }
 
-        // TODO: default values to their default values in ctor.
-        public MemoryPrinter()
-            : base()
-        {
-            _ms = new MemoryStream();
-            Writer = new BinaryWriter(_ms);
-        }
+    ~MemoryPrinter()
+    {
+        Dispose(false);
+    }
 
-        ~MemoryPrinter()
-        {
-            Dispose(false);
-        }
+    public byte[] GetAllData()
+    {
+        return _ms.ToArray();
+    }
 
-        public byte[] GetAllData()
-        {
-            return _ms.ToArray();
-        }
-
-        protected override void OverridableDispose()
-        {
-            _ms?.Close();
-            _ms?.Dispose();
-        }
+    protected override void OverridableDispose()
+    {
+        _ms?.Close();
+        _ms?.Dispose();
     }
 }

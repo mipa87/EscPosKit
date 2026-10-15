@@ -1,4 +1,3 @@
-﻿namespace ESCPOS_NET.Emitters
-{
-    public class EPSON : BaseCommandEmitter { }
-}
+﻿namespace ESCPOS_NET.Emitters;
+
+public class EPSON : BaseCommandEmitter { }

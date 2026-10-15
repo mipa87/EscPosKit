@@ -13,7 +13,7 @@ public class DirectPrinterTests
 
         directPrinter.Print("ABC").Print("DEF");
 
-        Assert.Equal(new byte[] { 65, 66, 67, 68, 69, 70 }, directPrinter.Buffer);
+        Assert.Equal("ABCDEF"u8.ToArray(), directPrinter.Buffer);
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class DirectPrinterTests
         directPrinter.ClearAll();
         directPrinter.Print("GHI").Print("JKL");
 
-        Assert.Equal(new byte[] { 71, 72, 73, 74, 75, 76 }, directPrinter.Buffer);
+        Assert.Equal("GHIJKL"u8.ToArray(), directPrinter.Buffer);
     }
 
     [Fact]

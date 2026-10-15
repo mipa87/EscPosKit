@@ -1,11 +1,8 @@
-﻿using System;
+﻿namespace ESCPOS_NET.Emitters;
 
-namespace ESCPOS_NET.Emitters
+[Flags]
+public enum Color
 {
-    [Flags]
-    public enum Color
-    {
-        Black = 0,
-        Red = 1,
-    }
+    Black = 0,
+    Red = 1,
 }

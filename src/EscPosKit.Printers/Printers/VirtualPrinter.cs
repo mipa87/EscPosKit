@@ -1,9 +1,8 @@
 ﻿// TODO: Implement this class
 
-namespace ESCPOS_NET
+namespace ESCPOS_NET;
+
+public class VirtualPrinter
 {
-    public class VirtualPrinter
-    {
-        public byte[] Output { get; private set; }
-    }
+    public byte[] Output { get; private set; }
 }

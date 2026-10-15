@@ -1,19 +1,14 @@
-﻿using System;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-using ESCPOS_NET.Emitters;
-using ESCPOS_NET.Printers;
+﻿using ESCPOS_NET.Emitters;
 
-namespace ESCPOS_NET
+namespace ESCPOS_NET;
+
+// An ImmediatePrinter is a printer that connects to a printer,
+// writes/reads data, and then immediately disconnects.
+// It doesn't queue writes or reads, or keep a connection open to the printer persistently.
+// Therefore, it should expose async methods because the processing may take some time.
+public interface IImmediatePrinter
 {
-    // An ImmediatePrinter is a printer that connects to a printer,
-    // writes/reads data, and then immediately disconnects.
-    // It doesn't queue writes or reads, or keep a connection open to the printer persistently.
-    // Therefore, it should expose async methods because the processing may take some time.
-    public interface IImmediatePrinter
-    {
-        public Task<bool> GetOnlineStatus(ICommandEmitter emitter);
-        public Task WriteAsync(params byte[][] arrays);
-        public Task WriteAsync(byte[] bytes);
-    }
+    public Task<bool> GetOnlineStatus(ICommandEmitter emitter);
+    public Task WriteAsync(params byte[][] arrays);
+    public Task WriteAsync(byte[] bytes);
 }

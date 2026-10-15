@@ -1,9 +1,6 @@
-﻿using System;
+﻿namespace ESCPOS_NET;
 
-namespace ESCPOS_NET
+public class ConnectionEventArgs : EventArgs
 {
-    public class ConnectionEventArgs : EventArgs
-    {
-        public bool IsConnected;
-    }
+    public bool IsConnected;
 }
