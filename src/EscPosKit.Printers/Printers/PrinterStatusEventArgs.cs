@@ -20,7 +20,11 @@ namespace ESCPOS_NET
 
         public bool? IsPaperOut { get; set; }
 
-        public bool? IsInErrorState => (DidRecoverableErrorOccur ?? false) || (DidUnrecoverableErrorOccur ?? false) || (DidAutocutterErrorOccur ?? false) || (DidRecoverableNonAutocutterErrorOccur ?? false);
+        public bool? IsInErrorState =>
+            (DidRecoverableErrorOccur ?? false)
+            || (DidUnrecoverableErrorOccur ?? false)
+            || (DidAutocutterErrorOccur ?? false)
+            || (DidRecoverableNonAutocutterErrorOccur ?? false);
 
         public bool? DidRecoverableErrorOccur { get; set; }
 
@@ -29,6 +33,5 @@ namespace ESCPOS_NET
         public bool? DidAutocutterErrorOccur { get; set; }
 
         public bool? DidRecoverableNonAutocutterErrorOccur { get; set; }
-
     }
 }

@@ -1,13 +1,11 @@
-﻿
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Threading;
+﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ESCPOS_NET.Utils
 {
-
     public class EchoStream : Stream
     {
         public override bool CanTimeout { get; } = true;
@@ -30,6 +28,7 @@ namespace ESCPOS_NET.Utils
         private int m_count = 0;
 
         private bool m_Closed = false;
+
         public override void Close()
         {
             m_Closed = true;
@@ -38,39 +37,20 @@ namespace ESCPOS_NET.Utils
             _Buffers.CompleteAdding();
         }
 
-        public bool DataAvailable
-        {
-            get
-            {
-                return _Buffers.Count > 0;
-            }
-        }
+        public bool DataAvailable => _Buffers.Count > 0;
 
         private long _Length = 0L;
-        public override long Length
-        {
-            get
-            {
-                return _Length;
-            }
-        }
+        public override long Length => _Length;
 
         private long _Position = 0L;
         public override long Position
         {
-            get
-            {
-                return _Position;
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get => _Position;
+            set => throw new NotImplementedException();
         }
 
-        public EchoStream() : this(10)
-        {
-        }
+        public EchoStream()
+            : this(10) { }
 
         public EchoStream(int maxQueueDepth)
         {
@@ -96,18 +76,24 @@ namespace ESCPOS_NET.Utils
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (m_Closed || buffer.Length - offset < count || count <= 0)
+            {
                 return;
+            }
 
             byte[] newBuffer;
             if (!CopyBufferOnWrite && offset == 0 && count == buffer.Length)
+            {
                 newBuffer = buffer;
+            }
             else
             {
                 newBuffer = new byte[count];
                 System.Buffer.BlockCopy(buffer, offset, newBuffer, 0, count);
             }
             if (!_Buffers.TryAdd(newBuffer, WriteTimeout))
+            {
                 throw new TimeoutException("EchoStream Write() Timeout");
+            }
 
             _Length += count;
         }
@@ -115,13 +101,18 @@ namespace ESCPOS_NET.Utils
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (count == 0)
+            {
                 return 0;
+            }
+
             lock (_lock)
             {
                 if (m_count == 0 && _Buffers.Count == 0)
                 {
                     if (m_Closed)
+                    {
                         return -1;
+                    }
 
                     if (_Buffers.TryTake(out m_buffer, ReadTimeout))
                     {
@@ -129,10 +120,12 @@ namespace ESCPOS_NET.Utils
                         m_count = m_buffer.Length;
                     }
                     else
+                    {
                         return m_Closed ? -1 : 0;
+                    }
                 }
 
-                int returnBytes = 0;
+                var returnBytes = 0;
                 while (count > 0)
                 {
                     if (m_count == 0)
@@ -143,7 +136,9 @@ namespace ESCPOS_NET.Utils
                             m_count = m_buffer.Length;
                         }
                         else
+                        {
                             break;
+                        }
                     }
 
                     var bytesToCopy = (count < m_count) ? count : m_count;
@@ -164,13 +159,11 @@ namespace ESCPOS_NET.Utils
 
         public override int ReadByte()
         {
-            byte[] returnValue = new byte[1];
+            var returnValue = new byte[1];
             return (Read(returnValue, 0, 1) <= 0 ? -1 : (int)returnValue[0]);
         }
 
-        public override void Flush()
-        {
-        }
+        public override void Flush() { }
 
         public override long Seek(long offset, SeekOrigin origin)
         {

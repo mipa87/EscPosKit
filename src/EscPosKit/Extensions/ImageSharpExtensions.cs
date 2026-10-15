@@ -5,17 +5,25 @@ namespace SixLabors.ImageSharp
 {
     public static class ImageSharpExtensions
     {
-        public static byte[] ToSingleBitPixelByteArray(this Image<Rgba32> image, bool rasterFormat = true, int? maxWidth = null, int? maxHeight = null, float threshold = 0.5F)
+        public static byte[] ToSingleBitPixelByteArray(
+            this Image<Rgba32> image,
+            bool rasterFormat = true,
+            int? maxWidth = null,
+            int? maxHeight = null,
+            float threshold = 0.5F
+        )
         {
             image.Mutate(img =>
             {
                 if (maxWidth.HasValue || maxHeight.HasValue)
                 {
-                    img.Resize(new ResizeOptions
-                    {
-                        Mode = ResizeMode.Max,
-                        Size = new Size(maxWidth ?? int.MaxValue, maxHeight ?? int.MaxValue),
-                    });
+                    img.Resize(
+                        new ResizeOptions
+                        {
+                            Mode = ResizeMode.Max,
+                            Size = new Size(maxWidth ?? int.MaxValue, maxHeight ?? int.MaxValue),
+                        }
+                    );
                 }
 
                 img.BackgroundColor(Color.White);
@@ -40,12 +48,12 @@ namespace SixLabors.ImageSharp
 
             image.ProcessPixelRows(accessor =>
             {
-                for (int y = 0; y < accessor.Height; y++)
+                for (var y = 0; y < accessor.Height; y++)
                 {
                     var row = accessor.GetRowSpan(y);
                     var rowStartPosition = y * bytesPerRow;
 
-                    for (int x = 0; x < row.Length; x++)
+                    for (var x = 0; x < row.Length; x++)
                     {
                         if (!row[x].IsBlack())
                         {

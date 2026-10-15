@@ -62,9 +62,7 @@ namespace ESCPOS_NET.Utilities
         /// <summary>
         /// Create a new, empty builder ready to be filled.
         /// </summary>
-        public ByteArrayBuilder()
-        {
-        }
+        public ByteArrayBuilder() { }
 
         public ByteArrayBuilder Append(byte b)
         {
@@ -127,7 +125,7 @@ namespace ESCPOS_NET.Utilities
         /// <returns>An array.</returns>
         public byte[] ToArray()
         {
-            byte[] data = new byte[Length];
+            var data = new byte[Length];
             Array.Copy(store.GetBuffer(), data, Length);
             return data;
         }
@@ -157,10 +155,10 @@ namespace ESCPOS_NET.Utilities
         /// <returns>The byte array.</returns>
         private byte[] GetBytes(int length)
         {
-            byte[] data = new byte[length];
+            var data = new byte[length];
             if (length > 0)
             {
-                int read = store.Read(data, 0, length);
+                var read = store.Read(data, 0, length);
                 if (read != length)
                 {
                     throw new ApplicationException("Buffer did not contain " + length + " bytes");

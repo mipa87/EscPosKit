@@ -11,7 +11,8 @@ namespace ESCPOS_NET
         private string _tempFilePath;
         private MemoryStream _stream;
 
-        public SambaPrinter(string tempFileBasePath, string filePath) : base()
+        public SambaPrinter(string tempFileBasePath, string filePath)
+            : base()
         {
             _tempFileBasePath = tempFileBasePath;
             if (!Directory.Exists(_tempFileBasePath))
@@ -35,7 +36,6 @@ namespace ESCPOS_NET
                 File.WriteAllBytes(_tempFilePath, bytes);
                 File.Copy(_tempFilePath, _filePath);
                 File.Delete(_tempFilePath);
-
             }
             BytesWrittenSinceLastFlush = 0;
         }

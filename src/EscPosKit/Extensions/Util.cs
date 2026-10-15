@@ -13,7 +13,7 @@ namespace ESCPOS_NET.Extensions
         /// <returns>True if no item was ignored, otherwise False.</returns>
         public static bool AddRange<T>(this List<T> list, params object[] items)
         {
-            bool ignoredItems = false;
+            var ignoredItems = false;
             foreach (var item in items)
             {
                 if (item is T itemT)

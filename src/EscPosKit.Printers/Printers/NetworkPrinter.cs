@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using SuperSimpleTcp;
-using System;
+﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using SuperSimpleTcp;
 
 namespace ESCPOS_NET
 {
@@ -13,6 +13,7 @@ namespace ESCPOS_NET
         public string ConnectionString { get; set; }
         public EventHandler ConnectedHandler { get; set; }
         public EventHandler DisconnectedHandler { get; set; }
+
         //public bool ReconnectOnTimeout { get; set; }
         //public uint? ReceiveTimeoutMs { get; set; }
         //public uint? SendTimeoutMs { get; set; }
@@ -21,12 +22,14 @@ namespace ESCPOS_NET
         //public uint? MaxReconnectAttempts { get; set; }
         public string PrinterName { get; set; }
     }
+
     public class NetworkPrinter : BasePrinter
     {
         private readonly NetworkPrinterSettings _settings;
         private TCPConnection _tcpConnection;
 
-        public NetworkPrinter(NetworkPrinterSettings settings) : base(settings.PrinterName)
+        public NetworkPrinter(NetworkPrinterSettings settings)
+            : base(settings.PrinterName)
         {
             _settings = settings;
             if (settings.ConnectedHandler != null)
@@ -42,17 +45,29 @@ namespace ESCPOS_NET
 
         private void ConnectedEvent(object sender, SuperSimpleTcp.ConnectionEventArgs e)
         {
-            Logging.Logger?.LogInformation("[{Function}]:[{PrinterName}] Connected successfully to network printer! Connection String: {ConnectionString}", $"{this}.{MethodBase.GetCurrentMethod().Name}", PrinterName, _settings.ConnectionString);
+            Logging.Logger?.LogInformation(
+                "[{Function}]:[{PrinterName}] Connected successfully to network printer! Connection String: {ConnectionString}",
+                $"{this}.{MethodBase.GetCurrentMethod().Name}",
+                PrinterName,
+                _settings.ConnectionString
+            );
             IsConnected = true;
             InvokeConnect();
         }
+
         private void DisconnectedEvent(object sender, SuperSimpleTcp.ConnectionEventArgs e)
         {
             IsConnected = false;
             InvokeDisconnect();
-            Logging.Logger?.LogWarning("[{Function}]:[{PrinterName}] Network printer connection terminated. Attempting to reconnect. Connection String: {ConnectionString}", $"{this}.{MethodBase.GetCurrentMethod().Name}", PrinterName, _settings.ConnectionString);
+            Logging.Logger?.LogWarning(
+                "[{Function}]:[{PrinterName}] Network printer connection terminated. Attempting to reconnect. Connection String: {ConnectionString}",
+                $"{this}.{MethodBase.GetCurrentMethod().Name}",
+                PrinterName,
+                _settings.ConnectionString
+            );
             Connect();
         }
+
         private void AttemptReconnectInfinitely()
         {
             try
@@ -63,7 +78,11 @@ namespace ESCPOS_NET
             catch
             {
                 //Logging.Logger?.LogWarning("[{Function}]:[{PrinterName}] Network printer unable to connect after 5 minutes. Attempting to reconnect. Settings: {Settings}", $"{this}.{MethodBase.GetCurrentMethod().Name}", PrinterName, JsonSerializer.Serialize(_settings));
-                Task.Run(async () => { await Task.Delay(250); Connect(); });
+                Task.Run(async () =>
+                {
+                    await Task.Delay(250);
+                    Connect();
+                });
             }
         }
 
@@ -85,7 +104,10 @@ namespace ESCPOS_NET
             Reader = new BinaryReader(_tcpConnection.ReadStream);
             Writer = new BinaryWriter(_tcpConnection.WriteStream);
 
-            Task.Run(() => { AttemptReconnectInfinitely(); });
+            Task.Run(() =>
+            {
+                AttemptReconnectInfinitely();
+            });
         }
 
         protected override void OverridableDispose()

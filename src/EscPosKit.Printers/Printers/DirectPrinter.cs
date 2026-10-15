@@ -2,7 +2,7 @@
 using ESCPOS_NET.Utilities;
 
 namespace ESCPOS_NET.Printers
-{   
+{
     public class DirectPrinter
     {
         private ICommandEmitter Emitter { get; }
@@ -178,7 +178,12 @@ namespace ESCPOS_NET.Printers
             return this;
         }
 
-        public DirectPrinter BufferImage(byte[] image, int maxWidth, bool isLegacy = false, int color = 1)
+        public DirectPrinter BufferImage(
+            byte[] image,
+            int maxWidth,
+            bool isLegacy = false,
+            int color = 1
+        )
         {
             UpdateBuffer(this.Emitter.BufferImage(image, maxWidth, isLegacy, color));
             return this;
@@ -190,7 +195,13 @@ namespace ESCPOS_NET.Printers
             return this;
         }
 
-        public DirectPrinter PrintImage(byte[] image, bool isHiDPI, bool isLegacy = false, int maxWidth = -1, int color = 1)
+        public DirectPrinter PrintImage(
+            byte[] image,
+            bool isHiDPI,
+            bool isLegacy = false,
+            int maxWidth = -1,
+            int color = 1
+        )
         {
             UpdateBuffer(this.Emitter.PrintImage(image, isHiDPI, isLegacy, maxWidth, color));
             return this;
@@ -208,19 +219,33 @@ namespace ESCPOS_NET.Printers
             return this;
         }
 
-        public DirectPrinter PrintBarcode(BarcodeType type, string barcode, BarcodeCode code = BarcodeCode.CODE_B)
+        public DirectPrinter PrintBarcode(
+            BarcodeType type,
+            string barcode,
+            BarcodeCode code = BarcodeCode.CODE_B
+        )
         {
             UpdateBuffer(this.Emitter.PrintBarcode(type, barcode, code));
             return this;
         }
 
-        public DirectPrinter PrintQRCode(string data, TwoDimensionCodeType type = TwoDimensionCodeType.QRCODE_MODEL2, Size2DCode size = Size2DCode.NORMAL, CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7)
+        public DirectPrinter PrintQRCode(
+            string data,
+            TwoDimensionCodeType type = TwoDimensionCodeType.QRCODE_MODEL2,
+            Size2DCode size = Size2DCode.NORMAL,
+            CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7
+        )
         {
             UpdateBuffer(this.Emitter.PrintQRCode(data, type, size, correction));
             return this;
         }
 
-        public DirectPrinter Print2DCode(TwoDimensionCodeType type, string data, Size2DCode size = Size2DCode.NORMAL, CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7)
+        public DirectPrinter Print2DCode(
+            TwoDimensionCodeType type,
+            string data,
+            Size2DCode size = Size2DCode.NORMAL,
+            CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7
+        )
         {
             UpdateBuffer(this.Emitter.Print2DCode(type, data, size, correction));
             return this;
@@ -256,7 +281,7 @@ namespace ESCPOS_NET.Printers
             return this;
         }
 
-        private void UpdateBuffer(byte[] newBytes)
-            => this.Buffer = ByteSplicer.Combine(Buffer, newBytes);
+        private void UpdateBuffer(byte[] newBytes) =>
+            this.Buffer = ByteSplicer.Combine(Buffer, newBytes);
     }
 }

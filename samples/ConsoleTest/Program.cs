@@ -1,10 +1,10 @@
-﻿using ESCPOS_NET.Emitters;
-using System.Text.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using System.Threading;
+using ESCPOS_NET.Emitters;
+using Microsoft.Extensions.Logging;
 
 namespace ESCPOS_NET.ConsoleTest
 {
@@ -13,9 +13,8 @@ namespace ESCPOS_NET.ConsoleTest
         private static BasePrinter printer;
         private static ICommandEmitter e;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-
             Console.WriteLine("Welcome to the ESCPOS_NET Test Application!");
             Console.Write("Would you like to see all debug messages? (y/n): ");
             var response = Console.ReadLine().Trim().ToLowerInvariant();
@@ -33,7 +32,7 @@ namespace ESCPOS_NET.ConsoleTest
             Console.WriteLine("2 ) Test Network Printer");
             Console.WriteLine("3 ) Test Samba-Shared Printer");
             Console.Write("Choice: ");
-            string comPort = "";
+            var comPort = "";
             string ip;
             string networkPort;
             string smbPath;
@@ -44,7 +43,7 @@ namespace ESCPOS_NET.ConsoleTest
                 response = "1";
             }
 
-            int choice = int.Parse(response);
+            var choice = int.Parse(response);
 
             if (choice == 1)
             {
@@ -58,8 +57,8 @@ namespace ESCPOS_NET.ConsoleTest
                         {
                             comPort = "COM5";
                         }
-                    }                    
-                    Console.Write("Baud Rate (enter for default 115200): ");                    
+                    }
+                    Console.Write("Baud Rate (enter for default 115200): ");
                     if (!int.TryParse(Console.ReadLine(), out var baudRate))
                     {
                         baudRate = 115200;
@@ -91,7 +90,12 @@ namespace ESCPOS_NET.ConsoleTest
                 {
                     networkPort = "9100";
                 }
-                printer = new NetworkPrinter(settings: new NetworkPrinterSettings() { ConnectionString = $"{ip}:{networkPort}" });
+                printer = new NetworkPrinter(
+                    settings: new NetworkPrinterSettings()
+                    {
+                        ConnectionString = $"{ip}:{networkPort}",
+                    }
+                );
             }
             else if (choice == 3)
             {
@@ -101,7 +105,7 @@ namespace ESCPOS_NET.ConsoleTest
                 printer = new SambaPrinter(tempFileBasePath: @"C:\Temp", filePath: smbPath);
             }
 
-            bool monitor = false;
+            var monitor = false;
             Thread.Sleep(500);
             if (choice != 3) // SMB printers do not support reads so status back will not work.
             {
@@ -130,8 +134,7 @@ namespace ESCPOS_NET.ConsoleTest
                 { Option.LargeByteArrays, "Large Byte Arrays" },
                 { Option.CashDrawerPin2, "Cash Drawer Pin2" },
                 { Option.CashDrawerPin5, "Cash Drawer Pin5" },
-                { Option.Exit, "Exit" }
-
+                { Option.Exit, "Exit" },
             };
             while (true)
             {
@@ -141,7 +144,10 @@ namespace ESCPOS_NET.ConsoleTest
                 }
                 Console.Write("Execute Test: ");
 
-                if (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(Option), choice))
+                if (
+                    !int.TryParse(Console.ReadLine(), out choice)
+                    || !Enum.IsDefined(typeof(Option), choice)
+                )
                 {
                     Console.WriteLine("Invalid entry. Please try again.");
                     continue;
@@ -204,7 +210,9 @@ namespace ESCPOS_NET.ConsoleTest
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine($"Aborting print due to test failure. Exception: {e?.Message}, Stack Trace: {e?.GetBaseException()?.StackTrace}");
+                            Console.WriteLine(
+                                $"Aborting print due to test failure. Exception: {e?.Message}, Stack Trace: {e?.GetBaseException()?.StackTrace}"
+                            );
                         }
                         break;
                     case Option.CashDrawerPin2:
@@ -242,16 +250,21 @@ namespace ESCPOS_NET.ConsoleTest
             LargeByteArrays,
             CashDrawerPin2,
             CashDrawerPin5,
-            Exit = 99
+            Exit = 99,
         }
 
         private static void StatusChanged(object sender, EventArgs ps)
         {
             var status = (PrinterStatusEventArgs)ps;
-            if (status == null) { Console.WriteLine("Status was null - unable to read status from printer."); return; }
+            if (status == null)
+            {
+                Console.WriteLine("Status was null - unable to read status from printer.");
+                return;
+            }
             Console.WriteLine($"Printer Online Status: {status.IsPrinterOnline}");
             Console.WriteLine(JsonSerializer.Serialize(status));
         }
+
         private static bool _hasEnabledStatusMonitoring = false;
 
         private static void Setup(bool enableStatusBackMonitoring)

@@ -12,8 +12,8 @@ namespace ESCPOS_NET
     // Therefore, it should expose async methods because the processing may take some time.
     public interface IImmediatePrinter
     {
-        Task<bool> GetOnlineStatus(ICommandEmitter emitter);
-        Task WriteAsync(params byte[][] arrays);
-        Task WriteAsync(byte[] bytes);
+        public Task<bool> GetOnlineStatus(ICommandEmitter emitter);
+        public Task WriteAsync(params byte[][] arrays);
+        public Task WriteAsync(byte[] bytes);
     }
 }

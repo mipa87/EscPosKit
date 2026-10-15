@@ -14,13 +14,19 @@ namespace ESCPOS_NET
 
         public override long Length => _innerStream.Length;
 
-        public override long Position { get => _innerStream.Position; set => _innerStream.Position = value; }
+        public override long Position
+        {
+            get => _innerStream.Position;
+            set => _innerStream.Position = value;
+        }
 
         private Action<byte[]> _writeAction { get; set; }
+
         public InterceptableWriteMemoryStream(Action<byte[]> writeAction)
         {
-            _writeAction = writeAction;   
+            _writeAction = writeAction;
         }
+
         public override void Flush()
         {
             _innerStream.Flush();

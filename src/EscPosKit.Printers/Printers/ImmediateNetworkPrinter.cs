@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-using SuperSimpleTcp;
-using System;
+﻿using System;
 using System.IO;
-using System.Threading.Tasks;
-using System.Reflection;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Threading;
-using ESCPOS_NET.Utils;
-using ESCPOS_NET.Utilities;
+using System.Threading.Tasks;
 using ESCPOS_NET.Emitters;
 using ESCPOS_NET.Printers;
+using ESCPOS_NET.Utilities;
+using ESCPOS_NET.Utils;
+using Microsoft.Extensions.Logging;
+using SuperSimpleTcp;
 
 namespace ESCPOS_NET
 {
@@ -27,7 +27,6 @@ namespace ESCPOS_NET
     {
         private readonly ImmediateNetworkPrinterSettings _settings;
 
-
         public ImmediateNetworkPrinter(ImmediateNetworkPrinterSettings settings)
         {
             _settings = settings;
@@ -38,19 +37,30 @@ namespace ESCPOS_NET
 
         private async Task<TcpClient> ConnectAsync()
         {
-            TcpClient client = new TcpClient();
+            var client = new TcpClient();
 
             // ConnectionString is of the form ip:port, or hostname:port, or hostname.
             var hostnameOrIp = _settings.ConnectionString.Split(':')[0];
-            var port = _settings.ConnectionString.Contains(":") ? int.Parse(_settings.ConnectionString.Split(':')[1]) : 9100;
+            var port = _settings.ConnectionString.Contains(":")
+                ? int.Parse(_settings.ConnectionString.Split(':')[1])
+                : 9100;
 
             try
             {
-                await CancelableTaskRunnerWithTimeout.RunTask(client.ConnectAsync(hostnameOrIp, port), (int)(_settings.ConnectTimeoutMs ?? 0), CancellationToken.None);
+                await CancelableTaskRunnerWithTimeout.RunTask(
+                    client.ConnectAsync(hostnameOrIp, port),
+                    (int)(_settings.ConnectTimeoutMs ?? 0),
+                    CancellationToken.None
+                );
             }
             catch (Exception e)
             {
-                Logging.Logger?.LogError(e, "[{Function}]:[{PrinterName}] Unable to connect to printer.", $"{this}.{MethodBase.GetCurrentMethod().Name}", _settings.PrinterName);
+                Logging.Logger?.LogError(
+                    e,
+                    "[{Function}]:[{PrinterName}] Unable to connect to printer.",
+                    $"{this}.{MethodBase.GetCurrentMethod().Name}",
+                    _settings.PrinterName
+                );
                 client.Close();
                 throw;
             }
@@ -74,13 +84,21 @@ namespace ESCPOS_NET
             }
             var stream = client.GetStream();
 
-            await WriteAsync(ByteSplicer.Combine(
-                emitter.Initialize(),
-                emitter.Enable(),
-                emitter.RequestOnlineStatus()), client);
+            await WriteAsync(
+                ByteSplicer.Combine(
+                    emitter.Initialize(),
+                    emitter.Enable(),
+                    emitter.RequestOnlineStatus()
+                ),
+                client
+            );
 
             var response = new byte[1];
-            await CancelableTaskRunnerWithTimeout.RunTask(stream.ReadAsync(response, 0, 1), (int)(_settings.ReceiveTimeoutMs ?? 0), CancellationToken.None);
+            await CancelableTaskRunnerWithTimeout.RunTask(
+                stream.ReadAsync(response, 0, 1),
+                (int)(_settings.ReceiveTimeoutMs ?? 0),
+                CancellationToken.None
+            );
 
             if (didCreateClient)
             {
@@ -89,11 +107,9 @@ namespace ESCPOS_NET
             return (response[0] & 0x08) == 0;
         }
 
-
         public async Task WriteAsync(byte[] bytes)
         {
             await WriteAsync(bytes, default(TcpClient));
-
         }
 
         public async Task WriteAsync(params byte[][] arrays)
@@ -114,13 +130,16 @@ namespace ESCPOS_NET
             }
             var stream = client.GetStream();
 
-            await CancelableTaskRunnerWithTimeout.RunTask(stream.WriteAsync(bytes, 0, bytes.Length), (int)(_settings.SendTimeoutMs ?? 0), CancellationToken.None);
+            await CancelableTaskRunnerWithTimeout.RunTask(
+                stream.WriteAsync(bytes, 0, bytes.Length),
+                (int)(_settings.SendTimeoutMs ?? 0),
+                CancellationToken.None
+            );
 
             if (didCreateClient)
             {
                 client.Close();
             }
         }
-
     }
 }

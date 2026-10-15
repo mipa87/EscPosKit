@@ -4,8 +4,8 @@ namespace ESCPOS_NET
 {
     public interface IPrinter
     {
-        PrinterStatusEventArgs GetStatus();
-        void Write(params byte[][] arrays);
-        void Write(byte[] bytes);
+        public PrinterStatusEventArgs GetStatus();
+        public void Write(params byte[][] arrays);
+        public void Write(byte[] bytes);
     }
 }

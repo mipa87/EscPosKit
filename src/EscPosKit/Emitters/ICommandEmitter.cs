@@ -1,109 +1,128 @@
-using ESCPOS_NET.Emitters.BaseCommandValues;
 using System.Text;
+using ESCPOS_NET.Emitters.BaseCommandValues;
 
 namespace ESCPOS_NET.Emitters
 {
     public interface ICommandEmitter
     {
-        Encoding Encoding { get; set; }
+        public Encoding Encoding { get; set; }
 
         /* Print Commands */
-        byte[] PrintLine(string line = null);
+        public byte[] PrintLine(string line = null);
 
-        byte[] Print(string line);
+        public byte[] Print(string line);
 
-        byte[] FeedLines(int lineCount);
+        public byte[] FeedLines(int lineCount);
 
-        byte[] FeedLinesReverse(int lineCount);
+        public byte[] FeedLinesReverse(int lineCount);
 
-        byte[] FeedDots(int dotCount);
+        public byte[] FeedDots(int dotCount);
 
         /* Line Spacing Commands */
-        byte[] ResetLineSpacing();
+        public byte[] ResetLineSpacing();
 
-        byte[] SetLineSpacingInDots(int dots);
+        public byte[] SetLineSpacingInDots(int dots);
 
         /* Operational Commands */
-        byte[] Initialize();
+        public byte[] Initialize();
 
-        byte[] Enable();
+        public byte[] Enable();
 
-        byte[] Disable();
+        public byte[] Disable();
 
         /* Cash Drawer Commands */
-        byte[] CashDrawerOpenPin2(int pulseOnTimeMs = 120, int pulseOffTimeMs = 240);
+        public byte[] CashDrawerOpenPin2(int pulseOnTimeMs = 120, int pulseOffTimeMs = 240);
 
-        byte[] CashDrawerOpenPin5(int pulseOnTimeMs = 120, int pulseOffTimeMs = 240);
+        public byte[] CashDrawerOpenPin5(int pulseOnTimeMs = 120, int pulseOffTimeMs = 240);
 
         /* Character Commands */
-        byte[] SetStyles(PrintStyle style);
+        public byte[] SetStyles(PrintStyle style);
 
-        byte[] LeftAlign();
+        public byte[] LeftAlign();
 
-        byte[] RightAlign();
+        public byte[] RightAlign();
 
-        byte[] CenterAlign();
+        public byte[] CenterAlign();
 
-        byte[] ReverseMode(bool activate);
+        public byte[] ReverseMode(bool activate);
 
-        byte[] RightCharacterSpacing(int spaceCount);
+        public byte[] RightCharacterSpacing(int spaceCount);
 
-        byte[] UpsideDownMode(bool activate);
+        public byte[] UpsideDownMode(bool activate);
 
-        byte[] CodePage(CodePage codePage);
+        public byte[] CodePage(CodePage codePage);
 
-        byte[] Color(Color color);
+        public byte[] Color(Color color);
 
         /* Action Commands */
-        byte[] FullCut();
+        public byte[] FullCut();
 
-        byte[] PartialCut();
+        public byte[] PartialCut();
 
-        byte[] FullCutAfterFeed(int lineCount);
+        public byte[] FullCutAfterFeed(int lineCount);
 
-        byte[] PartialCutAfterFeed(int lineCount);
+        public byte[] PartialCutAfterFeed(int lineCount);
 
         /* Image Commands */
-        byte[] SetImageDensity(bool isHiDPI);
+        public byte[] SetImageDensity(bool isHiDPI);
 
-        byte[] BufferImage(byte[] image, int maxWidth, bool isLegacy = false, int color = 1);
+        public byte[] BufferImage(byte[] image, int maxWidth, bool isLegacy = false, int color = 1);
 
-        byte[] WriteImageFromBuffer();
+        public byte[] WriteImageFromBuffer();
 
-        byte[] PrintImage(byte[] image, bool isHiDPI, bool isLegacy = false, int maxWidth = -1, int color = 1);
+        public byte[] PrintImage(
+            byte[] image,
+            bool isHiDPI,
+            bool isLegacy = false,
+            int maxWidth = -1,
+            int color = 1
+        );
 
         /* Status Commands */
-        byte[] EnableAutomaticStatusBack();
+        public byte[] EnableAutomaticStatusBack();
 
-        byte[] EnableAutomaticInkStatusBack();
+        public byte[] EnableAutomaticInkStatusBack();
 
-        byte[] DisableAutomaticStatusBack();
+        public byte[] DisableAutomaticStatusBack();
 
-        byte[] DisableAutomaticInkStatusBack();
+        public byte[] DisableAutomaticInkStatusBack();
 
-        byte[] RequestOnlineStatus();
+        public byte[] RequestOnlineStatus();
 
-        byte[] RequestPaperStatus();
+        public byte[] RequestPaperStatus();
 
-        byte[] RequestDrawerStatus();
+        public byte[] RequestDrawerStatus();
 
-        byte[] RequestInkStatus();
-
+        public byte[] RequestInkStatus();
 
         /* Barcode Commands */
-        byte[] PrintBarcode(BarcodeType type, string barcode, BarcodeCode code = BarcodeCode.CODE_B);
+        public byte[] PrintBarcode(
+            BarcodeType type,
+            string barcode,
+            BarcodeCode code = BarcodeCode.CODE_B
+        );
 
         /* 2D-Code Commands */
-        byte[] PrintQRCode(string data, TwoDimensionCodeType type = TwoDimensionCodeType.QRCODE_MODEL2, Size2DCode size = Size2DCode.NORMAL, CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7);
+        public byte[] PrintQRCode(
+            string data,
+            TwoDimensionCodeType type = TwoDimensionCodeType.QRCODE_MODEL2,
+            Size2DCode size = Size2DCode.NORMAL,
+            CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7
+        );
 
-        byte[] Print2DCode(TwoDimensionCodeType type, string data, Size2DCode size = Size2DCode.NORMAL, CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7);
+        public byte[] Print2DCode(
+            TwoDimensionCodeType type,
+            string data,
+            Size2DCode size = Size2DCode.NORMAL,
+            CorrectionLevel2DCode correction = CorrectionLevel2DCode.PERCENT_7
+        );
 
-        byte[] SetBarcodeHeightInDots(int height);
+        public byte[] SetBarcodeHeightInDots(int height);
 
-        byte[] SetBarWidth(BarWidth width);
+        public byte[] SetBarWidth(BarWidth width);
 
-        byte[] SetBarLabelPosition(BarLabelPrintPosition position);
+        public byte[] SetBarLabelPosition(BarLabelPrintPosition position);
 
-        byte[] SetBarLabelFontB(bool fontB);
+        public byte[] SetBarLabelFontB(bool fontB);
     }
 }

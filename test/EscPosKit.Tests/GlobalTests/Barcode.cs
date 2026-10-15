@@ -19,7 +19,10 @@ public class Barcode
         byte[] bytes;
         if (codeType is TwoDimensionCodeType codeTypeValue)
         {
-            var data = codeTypeValue == TwoDimensionCodeType.QRCODE_MICRO ? ShorterWebsiteString : WebsiteString;
+            var data =
+                codeTypeValue == TwoDimensionCodeType.QRCODE_MICRO
+                    ? ShorterWebsiteString
+                    : WebsiteString;
             bytes = e.PrintQRCode(data, codeTypeValue);
         }
         else

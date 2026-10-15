@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace ESCPOS_NET.Printers
 {
     public class PaperStatus
