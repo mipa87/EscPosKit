@@ -1,4 +1,4 @@
-namespace ESCPOS_NET.Emitters
+﻿namespace ESCPOS_NET.Emitters
 {
 #pragma warning disable SA1602 // Enumeration items should be documented
 #pragma warning disable SA1600 // Elements should be documented

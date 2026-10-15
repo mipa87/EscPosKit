@@ -1,5 +1,15 @@
 * text=auto
 
+# Text files are CRLF everywhere so CSharpier (endOfLine: crlf) and .editorconfig agree on Linux too
+*.cs text eol=crlf
+*.csproj text eol=crlf
+*.props text eol=crlf
+*.slnx text eol=crlf
+*.json text eol=crlf
+*.yml text eol=crlf
+*.md text eol=crlf
+.editorconfig text eol=crlf
+
 # Verify snapshot files
 *.verified.txt text eol=lf working-tree-encoding=UTF-8
 *.verified.json text eol=lf working-tree-encoding=UTF-8

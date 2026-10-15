@@ -1,4 +1,4 @@
-using ESCPOS_NET.Emitters.BaseCommandValues;
+﻿using ESCPOS_NET.Emitters.BaseCommandValues;
 using ESCPOS_NET.Utilities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

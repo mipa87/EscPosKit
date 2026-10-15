@@ -481,7 +481,5 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# Build output (UseArtifactsOutput)
-artifacts/
 # Verify snapshot testing
 *.received.*

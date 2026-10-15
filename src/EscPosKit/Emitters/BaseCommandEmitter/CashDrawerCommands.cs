@@ -1,4 +1,4 @@
-using ESCPOS_NET.Emitters.BaseCommandValues;
+﻿using ESCPOS_NET.Emitters.BaseCommandValues;
 
 namespace ESCPOS_NET.Emitters
 {

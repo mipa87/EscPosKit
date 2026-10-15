@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore EscPosKit.slnx
+
+      - name: Check formatting
+        run: |
+          dotnet tool restore
+          dotnet csharpier check .
+          dotnet format whitespace EscPosKit.slnx --no-restore --verify-no-changes
+
+      - name: Build
+        run: dotnet build EscPosKit.slnx --no-restore -c Release
+
+      - name: Test
+        run: dotnet test EscPosKit.slnx --no-build -c Release -- --report-trx --results-directory artifacts/test-results
+
+      - name: Pack
+        run: dotnet pack EscPosKit.slnx --no-build -c Release -o artifacts/package
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: artifacts/test-results
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/package/*.nupkg

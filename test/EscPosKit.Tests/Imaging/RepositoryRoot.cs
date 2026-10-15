@@ -1,4 +1,4 @@
-namespace ESCPOS_NET.Tests.Imaging;
+﻿namespace ESCPOS_NET.Tests.Imaging;
 
 public static class RepositoryRoot
 {

@@ -1,4 +1,4 @@
-using ESCPOS_NET.Emitters;
+﻿using ESCPOS_NET.Emitters;
 
 namespace ESCPOS_NET.Tests.GlobalTests;
 

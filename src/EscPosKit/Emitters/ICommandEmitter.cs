@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using ESCPOS_NET.Emitters.BaseCommandValues;
 
 namespace ESCPOS_NET.Emitters
