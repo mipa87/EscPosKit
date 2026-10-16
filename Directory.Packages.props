@@ -10,6 +10,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.13" />
     <!-- To be replaced by a dependency-free rasterizer; see the audit suppressions in Directory.Build.props. -->
     <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.13" />
+    <PackageVersion Include="StbImageSharp" Version="2.30.16" />
     <PackageVersion Include="SuperSimpleTcp" Version="3.2.2" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.13" />
   </ItemGroup>

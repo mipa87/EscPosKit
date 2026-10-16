@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="StbImageSharp" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,7 @@
-﻿namespace ESCPOS_NET.Imaging;
+﻿using System.Buffers.Binary;
+using StbImageSharp;
+
+namespace ESCPOS_NET.Imaging;
 
 /// <summary>
 /// Turns images into <see cref="MonochromeBitmap"/>: alpha composited over white, BT.709
@@ -6,6 +9,47 @@
 /// </summary>
 public static class ImageRasterizer
 {
+    /// <summary>
+    /// Decodes PNG, JPEG, BMP, GIF, TGA or PSD bytes and rasterizes them.
+    /// </summary>
+    public static MonochromeBitmap FromEncoded(
+        byte[] image,
+        int? maxWidth = null,
+        int? maxHeight = null,
+        float threshold = 0.5f
+    )
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        if (!LooksComplete(image))
+        {
+            throw new ArgumentException("The image data is truncated.", nameof(image));
+        }
+
+        ImageResult decoded;
+        try
+        {
+            decoded = ImageResult.FromMemory(image, ColorComponents.RedGreenBlueAlpha);
+        }
+        catch (Exception ex)
+        {
+            // StbImageSharp throws its own types, and IndexOutOfRangeException on truncated data.
+            throw new ArgumentException(
+                "The bytes are not an image in a supported format.",
+                nameof(image),
+                ex
+            );
+        }
+
+        return FromRgba(
+            decoded.Data,
+            decoded.Width,
+            decoded.Height,
+            maxWidth,
+            maxHeight,
+            threshold
+        );
+    }
+
     // Stucki kernel as (dx, dy, weight), divisor 42.
     private static readonly int[,] StuckiKernel =
     {
@@ -170,6 +214,50 @@ public static class ImageRasterizer
         }
 
         return 0.0;
+    }
+
+    // stb_image reads past the end of truncated data as zeros instead of failing (PNG is the
+    // exception, its chunk CRCs catch it), so the container end is checked where that is cheap.
+    private static bool LooksComplete(byte[] image)
+    {
+        ReadOnlySpan<byte> data = image;
+
+        // JPEG: an EOI marker must follow the first SOS marker; trailing bytes after it are fine.
+        if (data.Length >= 4 && data[0] == 0xFF && data[1] == 0xD8)
+        {
+            var sos = data.IndexOf([(byte)0xFF, (byte)0xDA]);
+            return sos >= 0 && data[sos..].IndexOf([(byte)0xFF, (byte)0xD9]) >= 0;
+        }
+
+        // GIF: the stream ends with the trailer byte.
+        if (
+            data.Length >= 6
+            && data[0] == (byte)'G'
+            && data[1] == (byte)'I'
+            && data[2] == (byte)'F'
+        )
+        {
+            return data[^1] == 0x3B;
+        }
+
+        // BMP: uncompressed pixel data must fit after the declared pixel offset.
+        if (data.Length >= 54 && data[0] == (byte)'B' && data[1] == (byte)'M')
+        {
+            var pixelOffset = BinaryPrimitives.ReadInt32LittleEndian(data[10..]);
+            var width = BinaryPrimitives.ReadInt32LittleEndian(data[18..]);
+            var height = Math.Abs((long)BinaryPrimitives.ReadInt32LittleEndian(data[22..]));
+            var bitsPerPixel = BinaryPrimitives.ReadUInt16LittleEndian(data[28..]);
+            var compression = BinaryPrimitives.ReadInt32LittleEndian(data[30..]);
+            if (compression != 0 && compression != 3)
+            {
+                return true; // run-length encoded, the size cannot be derived from the header
+            }
+
+            var bytesPerRow = (((bitsPerPixel * (long)width) + 31) / 32) * 4;
+            return pixelOffset >= 0 && pixelOffset + (bytesPerRow * height) <= data.Length;
+        }
+
+        return true;
     }
 
     // Alpha composited over white, then BT.709 luma on the resulting sRGB values (0..255).
