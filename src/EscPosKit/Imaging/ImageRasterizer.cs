@@ -44,14 +44,132 @@ public static class ImageRasterizer
             );
         }
 
-        var luminance = ToLuminance(rgba, width, height);
-        if (maxWidth.HasValue || maxHeight.HasValue)
+        if (maxWidth.HasValue)
         {
-            throw new NotImplementedException("Resizing is added in the next task.");
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxWidth.Value, 1, nameof(maxWidth));
+        }
+
+        if (maxHeight.HasValue)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxHeight.Value, 1, nameof(maxHeight));
+        }
+
+        var luminance = ToLuminance(rgba, width, height);
+        var (targetWidth, targetHeight) = FitSize(width, height, maxWidth, maxHeight);
+        if (targetWidth != width || targetHeight != height)
+        {
+            luminance = Resample(luminance, width, height, targetWidth, targetHeight);
+            width = targetWidth;
+            height = targetHeight;
         }
 
         var black = Dither(luminance, width, height, threshold * 255f);
         return new MonochromeBitmap(width, height, Pack(black, width, height));
+    }
+
+    // Scale by the smaller ratio, round half to even, never below 1 px. Scaling up is allowed.
+    internal static (int Width, int Height) FitSize(
+        int width,
+        int height,
+        int? maxWidth,
+        int? maxHeight
+    )
+    {
+        if (!maxWidth.HasValue && !maxHeight.HasValue)
+        {
+            return (width, height);
+        }
+
+        var widthRatio = maxWidth.HasValue
+            ? maxWidth.Value / (double)width
+            : double.PositiveInfinity;
+        var heightRatio = maxHeight.HasValue
+            ? maxHeight.Value / (double)height
+            : double.PositiveInfinity;
+        var ratio = Math.Min(widthRatio, heightRatio);
+
+        var targetWidth = Math.Max(1, (int)Math.Round(width * ratio, MidpointRounding.ToEven));
+        var targetHeight = Math.Max(1, (int)Math.Round(height * ratio, MidpointRounding.ToEven));
+        return (targetWidth, targetHeight);
+    }
+
+    // Separable Catmull-Rom. When shrinking, the kernel is widened by the scale factor so every
+    // source pixel contributes.
+    private static float[] Resample(
+        float[] source,
+        int width,
+        int height,
+        int targetWidth,
+        int targetHeight
+    )
+    {
+        var horizontal = ResampleAxis(source, width, height, targetWidth, horizontal: true);
+        return ResampleAxis(horizontal, targetWidth, height, targetHeight, horizontal: false);
+    }
+
+    private static float[] ResampleAxis(
+        float[] source,
+        int width,
+        int height,
+        int targetLength,
+        bool horizontal
+    )
+    {
+        var sourceLength = horizontal ? width : height;
+        var otherLength = horizontal ? height : width;
+        var scale = sourceLength / (double)targetLength;
+        var support = Math.Max(1.0, scale);
+        var radius = 2.0 * support;
+
+        var result = new float[horizontal ? targetLength * height : width * targetLength];
+
+        for (var t = 0; t < targetLength; t++)
+        {
+            var center = ((t + 0.5) * scale) - 0.5;
+            var first = Math.Max(0, (int)Math.Floor(center - radius));
+            var last = Math.Min(sourceLength - 1, (int)Math.Ceiling(center + radius));
+
+            var weights = new double[last - first + 1];
+            var sum = 0.0;
+            for (var s = first; s <= last; s++)
+            {
+                var w = CatmullRom((s - center) / support);
+                weights[s - first] = w;
+                sum += w;
+            }
+
+            for (var o = 0; o < otherLength; o++)
+            {
+                var acc = 0.0;
+                for (var s = first; s <= last; s++)
+                {
+                    var index = horizontal ? (o * width) + s : (s * width) + o;
+                    acc += source[index] * weights[s - first];
+                }
+
+                var value = (float)(acc / sum);
+                var target = horizontal ? (o * targetLength) + t : (t * width) + o;
+                result[target] = Math.Clamp(value, 0f, 255f);
+            }
+        }
+
+        return result;
+    }
+
+    private static double CatmullRom(double x)
+    {
+        x = Math.Abs(x);
+        if (x < 1.0)
+        {
+            return (((1.5 * x) - 2.5) * x * x) + 1.0;
+        }
+
+        if (x < 2.0)
+        {
+            return ((((-0.5 * x) + 2.5) * x) - 4.0) * x + 2.0;
+        }
+
+        return 0.0;
     }
 
     // Alpha composited over white, then BT.709 luma on the resulting sRGB values (0..255).
