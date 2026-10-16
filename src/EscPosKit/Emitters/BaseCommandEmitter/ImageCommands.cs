@@ -1,13 +1,12 @@
 ﻿using ESCPOS_NET.Emitters.BaseCommandValues;
+using ESCPOS_NET.Imaging;
 using ESCPOS_NET.Utilities;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace ESCPOS_NET.Emitters;
 
 public abstract partial class BaseCommandEmitter : ICommandEmitter
 {
-    private byte[] GetImageHeader(int commandLength)
+    private static byte[] GetImageHeader(int commandLength)
     {
         var lengths = new byte[4];
         var i = 0;
@@ -31,10 +30,8 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
                 lengths[3],
             ];
         }
-        else
-        {
-            return [Cmd.GS, Images.ImageCmdParen, Images.ImageCmdL, lengths[0], lengths[1]];
-        }
+
+        return [Cmd.GS, Images.ImageCmdParen, Images.ImageCmdL, lengths[0], lengths[1]];
     }
 
     /* Image Commands */
@@ -42,7 +39,7 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
     {
         var builder = new ByteArrayBuilder();
         var dpiSetting = isHiDPI ? (byte)0x33 : (byte)0x32; // TODO: is this right??
-        var baseCommand = new byte[] { 0x30, 0x31, dpiSetting, dpiSetting };
+        byte[] baseCommand = [0x30, 0x31, dpiSetting, dpiSetting];
         builder.Append(GetImageHeader(baseCommand.Length));
         builder.Append(baseCommand);
         return builder.ToArray();
@@ -55,31 +52,33 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
         int color = 1
     )
     {
-        var imageCommand = new ByteArrayBuilder();
+        var bitmap = ImageRasterizer.FromEncoded(image, maxWidth: maxWidth == -1 ? null : maxWidth);
+        return BufferImage(bitmap, isLegacy, color);
+    }
+
+    public virtual byte[] BufferImage(MonochromeBitmap bitmap, bool isLegacy = false, int color = 1)
+    {
+        ArgumentNullException.ThrowIfNull(bitmap);
+        // The ESC/POS headers carry 16-bit sizes.
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(bitmap.Width, 65535, nameof(bitmap));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(bitmap.Height, 65535, nameof(bitmap));
+
         var colorByte = color switch
         {
             2 => (byte)0x32,
             3 => (byte)0x33,
             _ => (byte)0x31,
         };
-        int width;
-        int height;
-        byte[] imageData;
-        using (var img = Image.Load<Rgba32>(image))
-        {
-            imageData = img.ToSingleBitPixelByteArray(
-                maxWidth: maxWidth == -1 ? (int?)null : maxWidth
-            );
-            height = img.Height;
-            width = img.Width;
-        }
 
+        var width = bitmap.Width;
+        var height = bitmap.Height;
         var heightL = (byte)height;
         var heightH = (byte)(height >> 8);
 
+        var imageCommand = new ByteArrayBuilder();
         if (isLegacy)
         {
-            var byteWidth = (width + 7 & -8) / 8;
+            var byteWidth = bitmap.BytesPerRow;
             var widthL = (byte)byteWidth;
             var widthH = (byte)(byteWidth >> 8);
             imageCommand.Append([
@@ -111,7 +110,7 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
             ]);
         }
 
-        imageCommand.Append(imageData);
+        imageCommand.Append(bitmap.Data);
 
         // Load image to print buffer
         var response = new ByteArrayBuilder();
@@ -129,7 +128,7 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
     {
         // Print image that's already buffered.
         var response = new ByteArrayBuilder();
-        var printCommandBytes = "02"u8.ToArray();
+        byte[] printCommandBytes = [0x30, 0x32];
         response.Append(GetImageHeader(printCommandBytes.Length));
         response.Append(printCommandBytes);
         return response.ToArray();
@@ -143,17 +142,26 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
         int color = 1
     )
     {
+        var bitmap = ImageRasterizer.FromEncoded(image, maxWidth: maxWidth == -1 ? null : maxWidth);
+        return PrintImage(bitmap, isHiDPI, isLegacy, color);
+    }
+
+    public virtual byte[] PrintImage(
+        MonochromeBitmap bitmap,
+        bool isHiDPI,
+        bool isLegacy = false,
+        int color = 1
+    )
+    {
         if (isLegacy)
         {
-            return ByteSplicer.Combine(BufferImage(image, maxWidth, isLegacy));
+            return BufferImage(bitmap, isLegacy, color);
         }
-        else
-        {
-            return ByteSplicer.Combine(
-                SetImageDensity(isHiDPI),
-                BufferImage(image, maxWidth, isLegacy, color),
-                WriteImageFromBuffer()
-            );
-        }
+
+        return ByteSplicer.Combine(
+            SetImageDensity(isHiDPI),
+            BufferImage(bitmap, isLegacy, color),
+            WriteImageFromBuffer()
+        );
     }
 }

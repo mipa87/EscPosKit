@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using ESCPOS_NET.Imaging;
 
 namespace ESCPOS_NET.Emitters;
 
@@ -67,7 +68,16 @@ public interface ICommandEmitter
 
     public byte[] BufferImage(byte[] image, int maxWidth, bool isLegacy = false, int color = 1);
 
+    public byte[] BufferImage(MonochromeBitmap bitmap, bool isLegacy = false, int color = 1);
+
     public byte[] WriteImageFromBuffer();
+
+    public byte[] PrintImage(
+        MonochromeBitmap bitmap,
+        bool isHiDPI,
+        bool isLegacy = false,
+        int color = 1
+    );
 
     public byte[] PrintImage(
         byte[] image,

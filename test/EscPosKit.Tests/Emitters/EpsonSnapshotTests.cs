@@ -1,7 +1,6 @@
 ﻿using ESCPOS_NET.Emitters;
+using ESCPOS_NET.Imaging;
 using ESCPOS_NET.Utilities;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using static ESCPOS_NET.Tests.Emitters.SnapshotHelpers;
 
 namespace ESCPOS_NET.Tests.Emitters;
@@ -70,16 +69,27 @@ public class EpsonSnapshotTests
     [Fact]
     public Task ImageHeader_LegacyAndRaster()
     {
-        // A 16x8 solid black image keeps the raster payload tiny and deterministic.
-        using var image = new Image<Rgba32>(16, 8, SixLabors.ImageSharp.Color.Black);
-        using var stream = new MemoryStream();
-        image.SaveAsPng(stream);
-        var png = stream.ToArray();
+        var png = File.ReadAllBytes(
+            Path.Combine(AppContext.BaseDirectory, "Images", "black-16x8.png")
+        );
 
         return VerifyBytes(
             ByteSplicer.Combine(
                 _e.PrintImage(png, isHiDPI: true, isLegacy: false),
                 _e.PrintImage(png, isHiDPI: false, isLegacy: true)
+            )
+        );
+    }
+
+    [Fact]
+    public Task ImageHeader_FromBitmap_MatchesEncodedPath()
+    {
+        var bitmap = new MonochromeBitmap(16, 8, [.. Enumerable.Repeat((byte)0xFF, 16)]);
+
+        return VerifyBytes(
+            ByteSplicer.Combine(
+                _e.PrintImage(bitmap, isHiDPI: true, isLegacy: false),
+                _e.PrintImage(bitmap, isHiDPI: false, isLegacy: true)
             )
         );
     }
