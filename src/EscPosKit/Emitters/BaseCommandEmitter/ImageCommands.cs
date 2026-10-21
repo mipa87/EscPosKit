@@ -63,12 +63,7 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
         ArgumentOutOfRangeException.ThrowIfGreaterThan(bitmap.Width, 65535, nameof(bitmap));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(bitmap.Height, 65535, nameof(bitmap));
 
-        var colorByte = color switch
-        {
-            2 => (byte)0x32,
-            3 => (byte)0x33,
-            _ => (byte)0x31,
-        };
+        var colorByte = ColorByte(color);
 
         var width = bitmap.Width;
         var height = bitmap.Height;
@@ -164,4 +159,13 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
             WriteImageFromBuffer()
         );
     }
+
+    // Color 1..3 of a raster image as the ESC/POS argument; anything else is color 1.
+    private static byte ColorByte(int color) =>
+        color switch
+        {
+            2 => 0x32,
+            3 => 0x33,
+            _ => 0x31,
+        };
 }

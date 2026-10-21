@@ -93,4 +93,19 @@ public class EpsonSnapshotTests
             )
         );
     }
+
+    [Fact]
+    public Task StoredImages_DefinePrintDelete()
+    {
+        var bitmap = new MonochromeBitmap(16, 8, [.. Enumerable.Repeat((byte)0xFF, 16)]);
+
+        return VerifyBytes(
+            ByteSplicer.Combine(
+                _e.DeleteAllStoredImages(),
+                _e.DefineStoredImage(bitmap, "LG", isHiDPI: true),
+                _e.PrintStoredImage("LG"),
+                _e.DeleteStoredImage("LG")
+            )
+        );
+    }
 }

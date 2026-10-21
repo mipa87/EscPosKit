@@ -93,6 +93,31 @@ public interface ICommandEmitter
         int color = 1
     );
 
+    public byte[] DefineStoredImage(
+        byte[] image,
+        string keyCode,
+        bool isHiDPI,
+        int maxWidth = -1,
+        int color = 1
+    );
+
+    public byte[] DefineStoredImage(
+        MonochromeBitmap bitmap,
+        string keyCode,
+        bool isHiDPI,
+        int color = 1
+    );
+
+    public byte[] PrintStoredImage(
+        string keyCode,
+        ImageScale horizontal = ImageScale.Normal,
+        ImageScale vertical = ImageScale.Normal
+    );
+
+    public byte[] DeleteStoredImage(string keyCode);
+
+    public byte[] DeleteAllStoredImages();
+
     /* Status Commands */
     public byte[] EnableAutomaticStatusBack();
 
