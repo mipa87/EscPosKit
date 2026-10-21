@@ -30,6 +30,8 @@ public interface ICommandEmitter
 
     public byte[] Disable();
 
+    public byte[] ExecuteTestPrint(TestPrintPattern pattern);
+
     /* Cash Drawer Commands */
     public byte[] CashDrawerOpenPin2(int pulseOnTimeMs = 120, int pulseOffTimeMs = 240);
 
@@ -50,7 +52,11 @@ public interface ICommandEmitter
 
     public byte[] UpsideDownMode(bool activate);
 
+    public byte[] UnderlineMode(bool enable);
+
     public byte[] CodePage(CodePage codePage);
+
+    public byte[] SelectCharacterEncoding(CharacterEncoding encoding);
 
     public byte[] Color(Color color);
 

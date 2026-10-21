@@ -6,4 +6,5 @@ public static class Functions
     public static readonly byte PaperCutFullCutWithFeed = 0x41;
     public static readonly byte PaperCutPartialCut = 0x01;
     public static readonly byte PaperCutPartialCutWithFeed = 0x42;
+    public static readonly byte SelectCharacterEncoding = 0x30;
 }

@@ -47,6 +47,10 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
     public virtual byte[] UpsideDownMode(bool enable) =>
         [Cmd.ESC, Chars.UpsideDownMode, enable ? (byte)0x01 : (byte)0x00];
 
+    // ESC - n: 1-dot underline on or off.
+    public virtual byte[] UnderlineMode(bool enable) =>
+        [Cmd.ESC, Chars.UnderlineMode, enable ? (byte)0x01 : (byte)0x00];
+
     [GeneratedRegex(@"\r\n|\r")]
     private static partial Regex MyRegex();
 }
