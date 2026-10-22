@@ -1,7 +1,6 @@
 <Solution>
   <Folder Name="/docs/">
     <File Path="README.md" />
-    <File Path="command_list.md" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/ConsoleTest/ConsoleTest.csproj" />

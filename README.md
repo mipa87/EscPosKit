@@ -110,7 +110,37 @@ e.Encoding = Encoding.UTF8;
 
 `SetStyles` sends underline through `ESC -` instead of bit 7 of `ESC !`, so underline works in UTF-8 mode too. `UnderlineMode(bool)` toggles it on its own, like `ReverseMode` and `UpsideDownMode`.
 
-The full list of implemented commands is in [command_list.md](https://github.com/mipa87/EscPosKit/blob/main/command_list.md).
+## Implemented commands
+
+Every method of `ICommandEmitter` and the ESC/POS command it emits. Commands not listed here are not implemented; see Epson's ESC/POS command reference for the full protocol.
+
+| Group        | Method                                                                                | Command                                                        |
+| ------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Print        | `Print`, `PrintLine`                                                                  | text in the current encoding, `LF`                             |
+| Print        | `FeedLines`, `FeedLinesReverse`                                                       | `ESC d`, `ESC e`                                               |
+| Print        | `FeedDots`                                                                            | `ESC J`                                                        |
+| Line spacing | `ResetLineSpacing`, `SetLineSpacingInDots`                                            | `ESC 2`, `ESC 3`                                               |
+| Character    | `SetStyles`                                                                           | `ESC !` (font, bold, size), plus `ESC -` when underline is set |
+| Character    | `UnderlineMode`, `ReverseMode`, `UpsideDownMode`                                      | `ESC -`, `GS B`, `ESC {`                                       |
+| Character    | `LeftAlign`, `CenterAlign`, `RightAlign`                                              | `ESC a`                                                        |
+| Character    | `RightCharacterSpacing`                                                               | `ESC SP`                                                       |
+| Character    | `CodePage`, `SelectCharacterEncoding`                                                 | `ESC t`, `FS ( C`                                              |
+| Character    | `Color`                                                                               | `ESC r`                                                        |
+| Operational  | `Initialize`, `Enable`, `Disable`                                                     | `ESC @`, `ESC =`                                               |
+| Operational  | `ExecuteTestPrint`                                                                    | `GS ( A`                                                       |
+| Cash drawer  | `CashDrawerOpenPin2`, `CashDrawerOpenPin5`                                            | `ESC p`                                                        |
+| Paper cut    | `FullCut`, `PartialCut`, `FullCutAfterFeed`, `PartialCutAfterFeed`                    | `GS V`                                                         |
+| Image        | `SetImageDensity`                                                                     | `GS ( L` fn 49                                                 |
+| Image        | `BufferImage`, `WriteImageFromBuffer`                                                 | `GS ( L` / `GS 8 L` fn 112 and fn 50; `GS v 0` with `isLegacy` |
+| Image        | `PrintImage`                                                                          | density, buffer and print in one call                          |
+| Image        | `DefineStoredImage`, `PrintStoredImage`, `DeleteStoredImage`, `DeleteAllStoredImages` | `GS ( L` fn 67, 69, 66, 65                                     |
+| Status       | `EnableAutomaticStatusBack`, `DisableAutomaticStatusBack`                             | `GS a`                                                         |
+| Status       | `EnableAutomaticInkStatusBack`, `DisableAutomaticInkStatusBack`                       | `GS j`                                                         |
+| Status       | `RequestOnlineStatus`                                                                 | `DLE EOT`                                                      |
+| Status       | `RequestPaperStatus`, `RequestDrawerStatus`, `RequestInkStatus`                       | `GS r`                                                         |
+| Barcode      | `PrintBarcode`                                                                        | `GS k`                                                         |
+| Barcode      | `SetBarcodeHeightInDots`, `SetBarWidth`, `SetBarLabelPosition`, `SetBarLabelFontB`    | `GS h`, `GS w`, `GS H`, `GS f`                                 |
+| 2D code      | `PrintQRCode`, `Print2DCode`                                                          | `GS ( k` (QR Code model 1, model 2, Micro QR; PDF417)          |
 
 ## Transports (EscPosKit.Printers)
 
