@@ -116,4 +116,25 @@ public class ImageRasterizerTests
     {
         Assert.Throws<ArgumentException>(() => new MonochromeBitmap(10, 3, new byte[5]));
     }
+
+    [Fact]
+    public void FromRgba_RejectsDimensionsWhoseByteCountOverflows()
+    {
+        // 2^30 x 4 pixels need 2^34 bytes; without a 64-bit check the length test wraps around.
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            ImageRasterizer.FromRgba(new byte[16], 1 << 30, 4)
+        );
+
+        Assert.Equal("width", ex.ParamName);
+    }
+
+    [Fact]
+    public void MonochromeBitmap_RejectsDimensionsWhoseByteCountOverflows()
+    {
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new MonochromeBitmap(int.MaxValue, 8, new byte[8])
+        );
+
+        Assert.Equal("width", ex.ParamName);
+    }
 }

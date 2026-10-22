@@ -30,7 +30,7 @@ public static class ImageRasterizer
         {
             decoded = ImageResult.FromMemory(image, ColorComponents.RedGreenBlueAlpha);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             // StbImageSharp throws its own types, and IndexOutOfRangeException on truncated data.
             throw new ArgumentException(
@@ -67,6 +67,10 @@ public static class ImageRasterizer
         { 2, 2, 1 },
     };
 
+    /// <summary>
+    /// Rasterizes 8-bit RGBA pixels, row-major and top-down, optionally fitting them into
+    /// <paramref name="maxWidth"/> by <paramref name="maxHeight"/> with the aspect ratio kept.
+    /// </summary>
     public static MonochromeBitmap FromRgba(
         ReadOnlySpan<byte> rgba,
         int width,
@@ -80,10 +84,19 @@ public static class ImageRasterizer
         ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(threshold, 0f);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(threshold, 1f);
-        if (rgba.Length != width * height * 4)
+        var expected = (long)width * height * 4;
+        if (expected > Array.MaxLength)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(width),
+                $"{width}x{height} pixels exceed the largest supported image."
+            );
+        }
+
+        if (rgba.Length != expected)
         {
             throw new ArgumentException(
-                $"Expected {width * height * 4} bytes of RGBA data for {width}x{height} pixels, got {rgba.Length}.",
+                $"Expected {expected} bytes of RGBA data for {width}x{height} pixels, got {rgba.Length}.",
                 nameof(rgba)
             );
         }

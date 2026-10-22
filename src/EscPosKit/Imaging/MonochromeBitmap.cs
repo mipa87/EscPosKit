@@ -12,7 +12,15 @@ public sealed class MonochromeBitmap
         ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
         ArgumentNullException.ThrowIfNull(data);
 
-        var expected = ((width + 7) / 8) * height;
+        var expected = ((long)width + 7) / 8 * height;
+        if (expected > Array.MaxLength)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(width),
+                $"{width}x{height} pixels exceed the largest supported bitmap."
+            );
+        }
+
         if (data.Length != expected)
         {
             throw new ArgumentException(
