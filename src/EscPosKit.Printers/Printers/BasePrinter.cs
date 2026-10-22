@@ -293,7 +293,7 @@ public abstract partial class BasePrinter : IPrinter, IDisposable
 
     public virtual void DataAvailable()
     {
-        if (ReadBuffer.Count() % 4 == 0)
+        if (ReadBuffer.Count % 4 == 0)
         {
             var bytes = new byte[4];
             for (var i = 0; i < 4; i++)

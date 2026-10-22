@@ -35,7 +35,7 @@ public class ImmediateNetworkPrinter : IImmediatePrinter
 
         // ConnectionString is of the form ip:port, or hostname:port, or hostname.
         var hostnameOrIp = _settings.ConnectionString.Split(':')[0];
-        var port = _settings.ConnectionString.Contains(":")
+        var port = _settings.ConnectionString.Contains(':')
             ? int.Parse(_settings.ConnectionString.Split(':')[1])
             : 9100;
 

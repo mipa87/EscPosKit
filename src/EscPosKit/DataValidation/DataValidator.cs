@@ -9,10 +9,7 @@ public abstract class BaseDataValidator<T>
 
     public void Validate(T type, string data, BarcodeCode? code = null)
     {
-        if (data is null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
+        ArgumentNullException.ThrowIfNull(data);
 
         // Validate constraints on barcode.
         _constraints.TryGetValue(type, out var constraints);
@@ -232,10 +229,7 @@ public static class DataValidator
             switch (type)
             {
                 case BarcodeType.UPC_E:
-                    if (
-                        barcode.Length != 6
-                        && !barcode.StartsWith("0", StringComparison.InvariantCulture)
-                    )
+                    if (barcode.Length != 6 && !barcode.StartsWith('0'))
                     {
                         throw new ArgumentException(
                             $"UPC_E Barcode {barcode} with length of 7, 8, 11, or 12 must start with 0."
@@ -272,10 +266,7 @@ public static class DataValidator
                     break;
 
                 case BarcodeType.CODE93:
-                    if (
-                        !barcode.StartsWith("*", StringComparison.InvariantCulture)
-                        || !barcode.EndsWith("*", StringComparison.InvariantCulture)
-                    )
+                    if (!barcode.StartsWith('*') || !barcode.EndsWith('*'))
                     {
                         throw new ArgumentException(
                             $"CODE93 Barcode {barcode} must start and end with * characters."
