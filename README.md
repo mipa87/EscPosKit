@@ -1,288 +1,148 @@
-<img src="https://raw.githubusercontent.com/lukevp/ESC-POS-.NET/master/banner2.jpg" />
-<h1 align="center">ESCPOS.NET - Easy to use, Cross-Platform, Fast and Efficient.</h1>
-<br />
-<p align="center">
-  <a href="https://raw.githubusercontent.com/lukevp/ESC-POS-.NET/master/LICENSE">
-    <img src="https://img.shields.io/github/license/lukevp/ESC-POS-.NET" />
-  </a>
-  <a href="https://github.com/lukevp/ESC-POS-.NET/issues">
-    <img src="https://img.shields.io/github/issues/lukevp/ESC-POS-.NET" /> 
-    <img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed/lukevp/ESC-POS-.NET">
-  </a>
-  <a href="https://www.nuget.org/packages/ESCPOS_NET/">
-    <img alt="Nuget" src="https://img.shields.io/nuget/dt/ESCPOS_NET?label=NuGet%20downloads">
-    </a>
-   <a href="https://github.com/lukevp/ESC-POS-.NET/graphs/contributors">
-    <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/lukevp/ESC-POS-.NET">
-    </a>
-</p>
-ESCPOS.NET is a super easy to use library that supports the most common functionality of the ESC/POS standard by Epson.  It is highly compatible, and runs on full framework .NET as well as .NET Core.
+# EscPosKit
 
-It works with Serial, USB, Ethernet, and WiFi printers, and works great on Windows, Linux and OSX.
+ESC/POS command generation for Epson-compatible thermal receipt printers, plus optional printer transports. Runs on .NET 10.
 
-This library is used for thermal receipt printers, line displays, cash drawers, and more!
+EscPosKit continues [lukevp/ESC-POS-.NET](https://github.com/lukevp/ESC-POS-.NET) (NuGet `ESCPOS_NET` 3.0.0), which stopped receiving updates in 2024. The namespaces are still `ESCPOS_NET.*`, so switching is a package swap plus the few changes listed under [Migrating from ESCPOS_NET](#migrating-from-escpos_net-300).
 
-ESC/POS is a binary protocol that's a type of "raw" text, which means you do not need drivers to use it.  
+[![EscPosKit on NuGet](https://img.shields.io/nuget/v/EscPosKit?label=EscPosKit)](https://www.nuget.org/packages/EscPosKit) [![EscPosKit.Printers on NuGet](https://img.shields.io/nuget/v/EscPosKit.Printers?label=EscPosKit.Printers)](https://www.nuget.org/packages/EscPosKit.Printers) [![CI](https://github.com/mipa87/EscPosKit/actions/workflows/ci.yml/badge.svg)](https://github.com/mipa87/EscPosKit/actions/workflows/ci.yml)
 
-This library encompasses helper functions that assist in creating the binary command stream that is needed to control this hardware, as well as the underlying communications that are needed to interface with the hardware.  
+## Packages
 
-This means that Bluetooth, WiFi, Ethernet, USB, and Serial printers are all usable with just this software library and nothing else.
+| Package              | Contents                                                                                                                                                                                                            | Dependencies                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `EscPosKit`          | The `EPSON` command emitter: text styles, alignment, code pages and UTF-8 mode, barcodes, QR codes, images, stored (NV) images, cash drawer, paper cut, status requests. Image decoding and dithering are built in. | StbImageSharp                                                                         |
+| `EscPosKit.Printers` | Transports that send the bytes: `ImmediateNetworkPrinter`, `NetworkPrinter` (with status events), `SerialPrinter`, `FilePrinter`, `SambaPrinter`, `MemoryPrinter`, `DirectPrinter`.                                 | EscPosKit, SuperSimpleTcp, System.IO.Ports, Microsoft.Extensions.Logging.Abstractions |
 
-# Get Started
+You only need `EscPosKit` if you already have a way to get bytes to the printer (a raw print queue, IPP, your own socket).
 
-## Step 1: Create a Printer object
-```csharp
-// Ethernet or WiFi (This uses an Immediate Printer, no live paper status events, but is easier to use)
-var hostnameOrIp = "192.168.1.50";
-var port = 9100;
-var printer = new ImmediateNetworkPrinter(new ImmediateNetworkPrinterSettings() { ConnectionString = $"{hostnameOrIp}:{port}", PrinterName = "TestPrinter" });
-
-// USB, Bluetooth, or Serial
-var printer = new SerialPrinter(portName: "COM5", baudRate: 115200);
-
-// Linux output to USB / Serial file
-var printer = new FilePrinter(filePath: "/dev/usb/lp0");
-
-// Samba
-var printer = new SambaPrinter(tempFileBasePath: @"C:\Temp", filePath: "\\computer\printer");
-```
-## Step 1a (optional): Monitor for Events - out of paper, cover open... 
-```csharp
-// Define a callback method.
-static void StatusChanged(object sender, EventArgs ps)
-{
-    var status = (PrinterStatusEventArgs)ps;
-    Console.WriteLine($"Status: {status.IsPrinterOnline}");
-    Console.WriteLine($"Has Paper? {status.IsPaperOut}");
-    Console.WriteLine($"Paper Running Low? {status.IsPaperLow}");
-    Console.WriteLine($"Cash Drawer Open? {status.IsCashDrawerOpen}");
-    Console.WriteLine($"Cover Open? {status.IsCoverOpen}");
-}
-
-... 
-
-// In your program, register event handler to call the method when printer status changes:
-printer.StatusChanged += StatusChanged;
-
-// and start monitoring for changes.
-printer.StartMonitoring();
-
+```shell
+dotnet add package EscPosKit
+dotnet add package EscPosKit.Printers
 ```
 
-## Step 2: Write a receipt to the printer
+## Quick start
+
 ```csharp
+using ESCPOS_NET;
+using ESCPOS_NET.Emitters;
+using ESCPOS_NET.Utilities;
+
 var e = new EPSON();
-printer.Write( // or, if using and immediate printer, use await printer.WriteAsync
-  ByteSplicer.Combine(
+var receipt = ByteSplicer.Combine(
+    e.Initialize(),
     e.CenterAlign(),
-    e.PrintImage(File.ReadAllBytes("images/pd-logo-300.png"), true),
+    e.PrintImage(File.ReadAllBytes("logo.png"), isHiDPI: true, maxWidth: 384),
+    e.SetStyles(PrintStyle.Bold | PrintStyle.DoubleHeight),
+    e.PrintLine("EXAMPLE STORE"),
+    e.SetStyles(PrintStyle.None),
+    e.PrintLine("123 Main Street"),
+    e.LeftAlign(),
     e.PrintLine(""),
-    e.SetBarcodeHeightInDots(360),
-    e.SetBarWidth(BarWidth.Default),
-    e.SetBarLabelPosition(BarLabelPrintPosition.None),
-    e.PrintBarcode(BarcodeType.ITF, "0123456789"),
-    e.PrintLine(""),
-    e.PrintLine("B&H PHOTO & VIDEO"),
-    e.PrintLine("420 NINTH AVE."),
-    e.PrintLine("NEW YORK, NY 10001"),
-    e.PrintLine("(212) 502-6380 - (800)947-9975"),
-    e.SetStyles(PrintStyle.Underline),
-    e.PrintLine("www.bhphotovideo.com"),
+    e.SetStyles(PrintStyle.FontB),
+    e.PrintLine("1 x Coffee                    3.50"),
+    e.PrintLine("1 x Bagel                     2.20"),
+    e.SetStyles(PrintStyle.Bold),
+    e.PrintLine("TOTAL                         5.70"),
     e.SetStyles(PrintStyle.None),
     e.PrintLine(""),
-    e.LeftAlign(),
-    e.PrintLine("Order: 123456789        Date: 02/01/19"),
-    e.PrintLine(""),
-    e.PrintLine(""),
-    e.SetStyles(PrintStyle.FontB),
-    e.PrintLine("1   TRITON LOW-NOISE IN-LINE MICROPHONE PREAMP"),
-    e.PrintLine("    TRFETHEAD/FETHEAD                        89.95         89.95"),
-    e.PrintLine("----------------------------------------------------------------"),
-    e.RightAlign(),
-    e.PrintLine("SUBTOTAL         89.95"),
-    e.PrintLine("Total Order:         89.95"),
-    e.PrintLine("Total Payment:         89.95"),
-    e.PrintLine(""),
-    e.LeftAlign(),
-    e.SetStyles(PrintStyle.Bold | PrintStyle.FontB),
-    e.PrintLine("SOLD TO:                        SHIP TO:"),
-    e.SetStyles(PrintStyle.FontB),
-    e.PrintLine("  FIRSTN LASTNAME                 FIRSTN LASTNAME"),
-    e.PrintLine("  123 FAKE ST.                    123 FAKE ST."),
-    e.PrintLine("  DECATUR, IL 12345               DECATUR, IL 12345"),
-    e.PrintLine("  (123)456-7890                   (123)456-7890"),
-    e.PrintLine("  CUST: 87654321"),
-    e.PrintLine(""),
-    e.PrintLine("")
-  )
+    e.PrintQRCode("https://example.com/receipt/123"),
+    e.PartialCutAfterFeed(4)
 );
-```
-## Step 3: Print special characters 
-Before you proceed, please make sure you understand the CodePages your printer supports, and if necessary use the [CodePage](https://github.com/lukevp/ESC-POS-.NET/blob/7edaa3f0d9f7298ffe33517074fbc3622e4192a9/ESCPOS_NET/Emitters/BaseCommandEmitter/CharacterCommands.cs#L24) command to change it accordingly to the wanted [encoding](https://en.wikipedia.org/wiki/Character_encoding).
 
-The problem folks usually run into is that C# strings are Unicode, so you are able to declare a string with, for example, the value `€` in C#, but unfortunately, that value does not correctly map to an ASCII 8-bit value that is printable using the standard 7-bit + extended codepages. See [here](https://www.compart.com/en/unicode/U+20AC) for more information
-
-So below an example of how to print `€`
-```cs
-    // € is char 0xD5 at PC858_EURO CodePage
-    var EURO = new byte[] { 0xD5 };
-    printer.Write(ByteSplicer.Combine(e.CodePage(CodePage.PC858_EURO), EURO));
-
-    //Optionally you can return to whatever default CodePage you had before. PC437 in this example
-    printer.Write(e.CodePage(CodePage.PC437_USA_STANDARD_EUROPE_DEFAULT));
-```
-Refer to [this code](https://github.com/lukevp/ESC-POS-.NET/blob/7edaa3f0d9f7298ffe33517074fbc3622e4192a9/ESCPOS_NET.ConsoleTest/TestCodePages.cs#L6-L41) to test your current CodePage, and to [this post](https://github.com/lukevp/ESC-POS-.NET/issues/103#issuecomment-778874734) for a full explanation.
-
-### Printing Chinese characters
-Assuming your printer has its default CodePage to match [GBK Enconding](https://en.wikipedia.org/wiki/GBK_(character_encoding)) you could accomplish printing chinese characters in 2 ways:
-
-#### 1 - Defining the Encoding in the Emitter
-```cs
-var e = new EPSON { Encoding = System.Text.Encoding.GetEncoding("GBK") };
-string chineseCharactersString = "汉字";
-
-printer.Write( 
-  ByteSplicer.Combine(
-    e.CenterAlign(),
-    e.Print("------------------------------------------"),
-    e.PrintLine(),
-    e.Print(chineseCharactersString),
-    e.PrintLine(),
-    e.Print("------------------------------------------"),
-    e.RightAlign(),
-    e.PrintLine()
-  )
+// EscPosKit.Printers: network printer, one-shot write
+var printer = new ImmediateNetworkPrinter(
+    new ImmediateNetworkPrinterSettings { ConnectionString = "192.168.1.50:9100", PrinterName = "Front desk" }
 );
+await printer.WriteAsync(receipt);
 ```
 
-#### 2 - Encoding all strings and directly using them in the Write() method
-```cs
-var encoding = System.Text.Encoding.GetEncoding("GBK");
-var e = new EPSON();
-string chineseCharactersString = "汉字";
-printer.Write( 
-  ByteSplicer.Combine(
-    e.CenterAlign(),
-    e.Print("------------------------------------------"),
-    e.PrintLine(),
-    encoding.GetBytes(chineseCharactersString),
-    e.PrintLine(),
-    e.Print("------------------------------------------"),
-    e.RightAlign(),
-    e.PrintLine()
-  )
-);
-```
-#### Important Note
-If you are using this library with .NET and not .NET Framework, an [extra step](https://learn.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=net-8.0) might be needed before you pass on the Enconding instance to the library
+`ICommandEmitter` methods return `byte[]`; `ByteSplicer.Combine` concatenates them. Everything the emitter produces is plain ESC/POS, so any transport works.
 
-![image](https://github.com/lukevp/ESC-POS-.NET/assets/10572656/01c9f3d3-ff83-4450-9178-0a3d2ea7eeaf)
+## Images
 
-This means you need to register the provider once with the line below before you instantiate the Encoding with `System.Text.Encoding.GetEncoding` method.
-```cs
-Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+`PrintImage(byte[] image, ...)` accepts PNG, JPEG, BMP, GIF, TGA or PSD bytes. The image is fitted into `maxWidth` (keeping the aspect ratio), composited over white, converted to BT.709 luminance and dithered with Stucki error diffusion before it is sent as a raster image. `isHiDPI` selects the printer's high density mode; `isLegacy: true` uses `GS v 0` for printers without `GS ( L` support.
+
+If you already have pixels, skip the decoder:
+
+```csharp
+using ESCPOS_NET.Imaging;
+
+MonochromeBitmap bitmap = ImageRasterizer.FromRgba(rgbaBytes, width, height, maxWidth: 384);
+var bytes = e.PrintImage(bitmap, isHiDPI: true);
 ```
 
-More details about .NET and Encoding [here](https://learn.microsoft.com/en-us/dotnet/standard/base-types/character-encoding).
+`MonochromeBitmap` is 1 bit per pixel, MSB first, rows padded to whole bytes, set bit = black dot. You can also build one yourself and hand it to `PrintImage`, `BufferImage` or `DefineStoredImage`.
 
-# Supported Platforms
-Desktop support (WiFI, Ethernet, Bluetooth, USB, Serial):
-* Windows
-  - Windows 7+ can support .NET Core or the .NET 471 runtime, and can use this library.
-* Linux 
-  - ARM platforms such as Raspberry Pi
-  - x86/64 platform
-* Mac OSX
-  - Tested from High Sierra to Monterrey, both Intel and M1 architectures
+### Stored images
 
-Mobile support (WiFi/Ethernet only):
-**ImmediateNetworkPrinter is the recommended integration type for mobile usage, since mobile applications can background your application at any time**
-* Xamarin.Forms
-* iOS
-  - Xamarin.iOS
-* Android
-  - Xamarin.Android
-* Windows
-  - UWP
+Logos can live in the printer's non-volatile memory and be printed by key code, which saves transfer time on every receipt:
 
-# Supported Hardware
-Epson thermal receipt printers are supported, and most common functions such as test printing, styling, alignment, image printing, and barcode printing.
+```csharp
+// once, during setup
+await printer.WriteAsync(e.DefineStoredImage(File.ReadAllBytes("logo.png"), "LG", isHiDPI: true, maxWidth: 384));
 
-Generic thermal printers that implement ESC/POS typically work, for example the Royal PT-300, and BemaTech printers are also tested by some members of the community, @juliogamasso and @ivanmontilla.
+// on every receipt
+await printer.WriteAsync(e.PrintStoredImage("LG"));
 
-Cash Drawers are supported, as are Line Displays.
+// housekeeping
+await printer.WriteAsync(e.DeleteStoredImage("LG"));
+await printer.WriteAsync(e.DeleteAllStoredImages());
+```
 
+Key codes are two printable ASCII characters. `PrintStoredImage` takes an `ImageScale` per axis (`Normal` or `Double`).
 
-## Further Documentation and Usage
-Check out the ESCPOS_NET.ConsoleTest for a comprehensive test suite that covers all implemented functions.
+## Text and encodings
 
-This package is available on NuGet @ https://www.nuget.org/packages/ESCPOS_NET/
+Strings are encoded with the emitter's `Encoding` property. Thermal printers do not understand Unicode by default: either select a code page that contains your characters and set `Encoding` to match, or switch UTF-8 capable models (TM-T88VI, TM-m30 and newer) to UTF-8 mode:
 
-Please comment / DM / open issues and let me know how the library is working for you!
+```csharp
+using System.Text;
 
-## Contributors
-Thanks to all of our contributors working to make this the best .NET thermal printer library out there!! 
+// Code page mode
+await printer.WriteAsync(e.CodePage(CodePage.PC858_EURO));
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // once at startup
+e.Encoding = Encoding.GetEncoding(858);
 
-* [@lukevp](https://github.com/lukevp)
-* [@juliogamasso](https://github.com/juliogamasso)
-* [@naaeef](https://github.com/naaeef)
-* [@netgg93](https://github.com/netgg93)
-* [@igorocampos](https://github.com/igorocampos)
-* [@kodejack](https://github.com/kodejack)
-* [@hollandar](https://github.com/hollandar)
-* [@nickcharlton](https://github.com/nickcharlton)
+// UTF-8 mode
+await printer.WriteAsync(e.SelectCharacterEncoding(CharacterEncoding.Utf8));
+e.Encoding = Encoding.UTF8;
+```
 
-# USB Usage Guide
+`SetStyles` sends underline through `ESC -` instead of bit 7 of `ESC !`, so underline works in UTF-8 mode too. `UnderlineMode(bool)` toggles it on its own, like `ReverseMode` and `UpsideDownMode`.
 
-For cross-platform support and ease of maintenance, all USB printers are supported over Serial-USB interfaces.  These are full-speed and work just as well as native USB as long as you have your port settings optimized.
+The full list of implemented commands is in [command_list.md](https://github.com/mipa87/EscPosKit/blob/main/command_list.md).
 
-On Linux and Mac, USB for Epson printers is exposed as a serial port directly by the os under /dev/ttyusb or something similar based on your platform, and doesn't require drivers.  
+## Transports (EscPosKit.Printers)
 
-On Windows, you must install some type of virtual COM port driver for native USB support, and then map your printer to a specific port, or use a USB-Serial cable and use a serial printer.
+| Printer                          | Use for                                                                                                        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `ImmediateNetworkPrinter`        | TCP port 9100, connect-write-disconnect per call. The simplest option; recommended for mobile and server apps. |
+| `NetworkPrinter`                 | Persistent TCP connection with `StatusChanged` events (paper, cover, drawer) via automatic status back.        |
+| `SerialPrinter`                  | Serial and USB printers exposed as COM ports or `/dev/tty*`.                                                   |
+| `FilePrinter`                    | Device files such as `/dev/usb/lp0` on Linux.                                                                  |
+| `SambaPrinter`                   | Windows printer shares.                                                                                        |
+| `MemoryPrinter` | Collects the bytes in memory, for tests or for your own transport. |
+| `DirectPrinter` | Fluent wrapper over an emitter and a printer: chain commands and send them with one call. |
 
-If you have an official Epson printer, the link to install it from Epson is here: https://download.epson-biz.com/modules/pos/index.php?page=single_soft&cid=6481&scat=36&pcat=5
+The transports are carried over from the original project. Network, serial and Samba transports are verified by compilation and unit tests here, not on hardware; the command emitter is verified on Epson TM-T88 and TM-m30 printers.
 
-If you do not have an official Epson printer, you will have to find a compatible way to expose the USB interface as a virtual Serial port.
+USB printers are used through a virtual COM port. On Linux and macOS the OS exposes them as a serial device; on Windows install the vendor's virtual COM port driver or use a USB-to-serial cable. The .NET serial port implementation only supports COM ports 1 to 8 on Windows.
 
-NOTE: The cross platform .NET library we use from Microsoft only supports COM ports 8 and below on windows, so be sure not to use a very high # COM port.
+## Migrating from ESCPOS_NET 3.0.0
 
+- Replace the `ESCPOS_NET` package with `EscPosKit`; add `EscPosKit.Printers` if you used the printer classes. Namespaces are unchanged.
+- Target framework is `net10.0` only.
+- `SixLabors.ImageSharp` is no longer referenced. The `ToSingleBitPixelByteArray` extension in the `SixLabors.ImageSharp` namespace is gone; use `ImageRasterizer`.
+- `SetStyles(PrintStyle.Underline)` now emits `ESC ! n` without bit 7 followed by `ESC - 1`. The printed result is the same.
+- `TCPConnection.Connected` and `Disconnected` use `SuperSimpleTcp.ConnectionEventArgs` (SuperSimpleTcp 3).
+- New: `SelectCharacterEncoding`, `UnderlineMode`, `ExecuteTestPrint`, `DefineStoredImage`, `PrintStoredImage`, `DeleteStoredImage`, `DeleteAllStoredImages`, and `MonochromeBitmap` overloads of `BufferImage` and `PrintImage`.
 
-# Implemented Commands
+## Building
 
-Most common commands are implemented natively in the library's included emitter.
-## Bit Image Commands
-* `ESC ✻` Select bit-image mode
-* `GS ( L` OR `GS 8 L` Set graphics data
-    * Set the reference dot density for graphics.
-    * Print the graphics data in the print buffer.
-    * Store the graphics data in the print buffer (raster format).
+Requires the .NET SDK pinned in `global.json`. `dotnet build EscPosKit.slnx`, `dotnet test EscPosKit.slnx`. Formatting is enforced by CSharpier and `dotnet format whitespace` (`dotnet tool restore` first). The console sample in `samples/ConsoleTest` prints test pages to a real printer.
 
-## Character Commands
-* `ESC !` Select print mode(s)
-* `GS B` Turn white/black reverse print mode on/off - Thanks @juliogamasso!
+Releases are cut by pushing a tag `vX.Y.Z` (or `vX.Y.Z-rc.N` for a prerelease); the version comes from the tag through MinVer and the workflow publishes both packages to nuget.org.
 
-## Print Commands
-* `LF` Print and line feed
-* `CR` Print and carriage return
-* `ESC J` Print and feed paper
-* `ESC K` Print and reverse feed
-* `ESC d` Print and feed n lines
-* `ESC e` Print and reverse feed n lines
+## Credits and license
 
-## Bar Code Commands
-* `GS H` Select print position of HRI characters
-* `GS f` Select font for HRI characters
-* `GS h` Set bar code height
-* `GS k` Print bar code
-* `GS w` Set bar code width
-* `GS ( k` Print 2D bar codes (QRCode and PDF417)
-
-## Status Commands
-* `GS a` Enable/disable Automatic Status Back (ASB)
-
-## Open Cash Drawer Commands
-* `ESC p 0` Open cash drawer pin 2
-* `ESC p 1` Open cash drawer pin 5
-
-## Miscellaneous Commands
-* `ESC @` Initialize printer
+Originally written by Luke Paireepinart and the contributors of [ESC-POS-.NET](https://github.com/lukevp/ESC-POS-.NET). MIT License, see [LICENSE](https://github.com/mipa87/EscPosKit/blob/main/LICENSE).
