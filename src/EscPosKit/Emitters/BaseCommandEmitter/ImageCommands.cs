@@ -56,6 +56,10 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
         return BufferImage(bitmap, isLegacy, color);
     }
 
+    /// <summary>
+    /// Sends an already rasterized bitmap to the print buffer (GS ( L fn 112), or prints it
+    /// directly with GS v 0 when <paramref name="isLegacy"/> is set.
+    /// </summary>
     public virtual byte[] BufferImage(MonochromeBitmap bitmap, bool isLegacy = false, int color = 1)
     {
         ArgumentNullException.ThrowIfNull(bitmap);
@@ -141,6 +145,9 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
         return PrintImage(bitmap, isHiDPI, isLegacy, color);
     }
 
+    /// <summary>
+    /// Sets the density, buffers an already rasterized bitmap and prints it in one call.
+    /// </summary>
     public virtual byte[] PrintImage(
         MonochromeBitmap bitmap,
         bool isHiDPI,

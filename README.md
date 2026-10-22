@@ -156,6 +156,18 @@ Every method of `ICommandEmitter` and the ESC/POS command it emits. Commands not
 
 The transports are carried over from the original project. Network, serial and Samba transports are verified by compilation and unit tests here, not on hardware; the command emitter is verified on Epson TM-T88 and TM-m30 printers.
 
+`NetworkPrinter` keeps the connection open and raises `StatusChanged` once automatic status back is enabled:
+
+```csharp
+var printer = new NetworkPrinter(new NetworkPrinterSettings { ConnectionString = "192.168.1.50:9100" });
+printer.StatusChanged += (sender, args) =>
+{
+    var status = (PrinterStatusEventArgs)args;
+    Console.WriteLine($"Online: {status.IsPrinterOnline}, paper out: {status.IsPaperOut}, cover open: {status.IsCoverOpen}");
+};
+printer.Write(ByteSplicer.Combine(e.Initialize(), e.Enable(), e.EnableAutomaticStatusBack()));
+```
+
 USB printers are used through a virtual COM port. On Linux and macOS the OS exposes them as a serial device; on Windows install the vendor's virtual COM port driver or use a USB-to-serial cable. The .NET serial port implementation only supports COM ports 1 to 8 on Windows.
 
 ## Migrating from ESCPOS_NET 3.0.0
@@ -164,6 +176,7 @@ USB printers are used through a virtual COM port. On Linux and macOS the OS expo
 - Target framework is `net10.0` only.
 - `SixLabors.ImageSharp` is no longer referenced. The `ToSingleBitPixelByteArray` extension in the `SixLabors.ImageSharp` namespace is gone; use `ImageRasterizer`.
 - `SetStyles(PrintStyle.Underline)` now emits `ESC ! n` without bit 7 followed by `ESC - 1`. The printed result is the same.
+- `Logging` and `BaseLogger` moved to `EscPosKit.Printers`; the emitter package does not log.
 - `TCPConnection.Connected` and `Disconnected` use `SuperSimpleTcp.ConnectionEventArgs` (SuperSimpleTcp 3).
 - New: `SelectCharacterEncoding`, `UnderlineMode`, `ExecuteTestPrint`, `DefineStoredImage`, `PrintStoredImage`, `DeleteStoredImage`, `DeleteAllStoredImages`, and `MonochromeBitmap` overloads of `BufferImage` and `PrintImage`.
 

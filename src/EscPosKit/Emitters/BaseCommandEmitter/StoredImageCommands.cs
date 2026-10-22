@@ -21,7 +21,10 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
         return DefineStoredImage(bitmap, keyCode, isHiDPI, color);
     }
 
-    // fn 67: store a monochrome image under the key code.
+    /// <summary>
+    /// Stores an already rasterized bitmap in the printer's NV memory under a two character
+    /// key code (GS ( L fn 67).
+    /// </summary>
     public virtual byte[] DefineStoredImage(
         MonochromeBitmap bitmap,
         string keyCode,
