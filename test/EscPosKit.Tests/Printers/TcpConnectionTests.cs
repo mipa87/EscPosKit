@@ -12,7 +12,7 @@ public class TcpConnectionTests
         listener.Start();
         var port = ((IPEndPoint)listener.LocalEndpoint).Port;
 
-        // Three separate sends exercise SuperSimpleTcp's buffer reuse between DataReceived events.
+        // Three separate sends must arrive as three intact DataReceived payloads.
         var chunks = new[] { new byte[] { 1, 2, 3 }, [4, 5], [6, 7, 8, 9] };
         var serverTask = Task.Run(
             async () =>
