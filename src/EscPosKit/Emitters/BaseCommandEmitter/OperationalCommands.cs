@@ -12,7 +12,14 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
     public virtual byte[] Disable() => [Cmd.ESC, Ops.EnableDisable, 0];
 
     // GS ( A: print one of the printer's built-in test patterns on roll paper.
-    public virtual byte[] ExecuteTestPrint(TestPrintPattern pattern) =>
+    public virtual byte[] ExecuteTestPrint(TestPrintPattern pattern)
+    {
+        if (!Enum.IsDefined(pattern))
+        {
+            throw new ArgumentOutOfRangeException(nameof(pattern), pattern, null);
+        }
+
+        return
         [
             Cmd.GS,
             Cmd.Paren,
@@ -22,6 +29,7 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
             Ops.TestPrintRollPaper,
             (byte)pattern,
         ];
+    }
 
     public virtual byte[] StandardMode() => [Cmd.ESC, Ops.StandardMode];
 }

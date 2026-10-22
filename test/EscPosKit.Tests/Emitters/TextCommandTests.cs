@@ -50,4 +50,10 @@ public class TextCommandTests
 
     [Fact]
     public void StandardMode_IsEscS() => Assert.Equal([0x1B, 0x53], new EPSON().StandardMode());
+
+    [Fact]
+    public void ExecuteTestPrint_RejectsUndefinedPattern() =>
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            _e.ExecuteTestPrint((TestPrintPattern)0x34)
+        );
 }

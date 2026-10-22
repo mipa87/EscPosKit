@@ -12,6 +12,7 @@ public static class Images
     public static readonly byte DeleteAllStoredImages = 0x41;
     public static readonly byte DeleteStoredImage = 0x42;
     public static readonly byte DefineStoredImage = 0x43;
+    public static readonly byte StoredImageRaster = 0x30;
     public static readonly byte PrintStoredImage = 0x45;
     public static readonly byte StoredImageMonochrome = 0x01;
 }

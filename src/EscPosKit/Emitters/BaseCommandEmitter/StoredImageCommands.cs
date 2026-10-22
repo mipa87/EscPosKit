@@ -39,7 +39,7 @@ public abstract partial class BaseCommandEmitter : ICommandEmitter
         record.Append([
             Images.StoredImageMode,
             Images.DefineStoredImage,
-            0x30, // a: raster format
+            Images.StoredImageRaster,
             kc1,
             kc2,
             Images.StoredImageMonochrome,
