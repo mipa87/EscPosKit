@@ -47,4 +47,7 @@ public class TextCommandTests
     [InlineData(TestPrintPattern.RollingPattern, 0x33)]
     public void ExecuteTestPrint_IsGsParenA_OnRollPaper(TestPrintPattern pattern, byte m) =>
         Assert.Equal([0x1D, 0x28, 0x41, 0x02, 0x00, 0x32, m], _e.ExecuteTestPrint(pattern));
+
+    [Fact]
+    public void StandardMode_IsEscS() => Assert.Equal([0x1B, 0x53], new EPSON().StandardMode());
 }

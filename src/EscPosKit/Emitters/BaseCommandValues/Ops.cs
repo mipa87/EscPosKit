@@ -6,7 +6,7 @@ public static class Ops
     public static readonly byte EnableDisable = 0x3D;
     public static readonly byte PaperCut = 0x56;
     public static readonly byte CashDrawerPulse = 0x70;
-    public static readonly byte StandardMode = 0x1B;
+    public static readonly byte StandardMode = 0x53;
     public static readonly byte TestPrint = 0x41;
     public static readonly byte TestPrintRollPaper = 0x32;
 }
